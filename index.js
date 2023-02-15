@@ -6,6 +6,7 @@ import FileUploader from 'express-fileupload';
 import Users from './users/routes';
 import Documents from './documents/routes';
 import Objects from './objects/routes';
+import Payments from './payments/routes';
 
 const app = Express();
 const port = process.env.PORT || 8080;
@@ -18,6 +19,7 @@ app.use(FileUploader( { limits: { fileSize: 5 * 1024 * 1024 } } ));
 app.use('/users', Users);
 app.use('/documents', Documents);
 app.use('/objects', Objects);
+app.use('/payments', Payments);
 
 app.listen(port);
 
