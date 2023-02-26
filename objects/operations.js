@@ -57,7 +57,19 @@ export const listFiles = async (path) => {
         let list = [];
         const [operation] = await storage.bucket('idyle').getFiles({ prefix: path });
         if (!operation) return false;
-        for (const item of operation) list.push(item.name);
+
+        const options = {
+            version: 'v4',
+            action: 'read',
+            expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+        };
+
+        for (const item of operation) list.push({
+            name: item.name.split(`${path}/`)[1],
+            type: item.metadata.contentType || 'unknown',
+            url: await item.getSignedUrl(options)
+        });
+
         return list;
     } catch (e) {
         console.error(e);
