@@ -17,7 +17,7 @@ export const listHandler = async (req, res) => {
         let operation = await listObjects(res.collection, req.query.filter, req.query.value);
         if (!operation) return errHandler(res, 'operationError');
         if (res.filter) operation = operation.filter(item => item[`${res.filter?.lookup}`] === res.filter?.match);
-        return res.json({ status: true, items: operation });
+        return res.json({ status: true, list: operation });
     } catch (e) {
         console.error(e);
         return errHandler(res);
