@@ -5,7 +5,7 @@ export const uploadHandler = async (req, res) => {
     try {
         const operation = await uploadFile(`${res.folder}/${req.params?.file}`, Object.values(req.files)[0]?.data);
         if (!operation) return errHandler(res, 'operationError');
-        return res.json({ status: true });         
+        return res.json({ status: true, file: operation });         
     } catch (e) {
         console.error(e);
         return errHandler(res);

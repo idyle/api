@@ -28,11 +28,33 @@ export const archiveFiles = (files = []) => {
     })
 };
 
+export const getFile = async (path = '') => {
+    try {
+
+        const options = {
+            version: 'v4',
+            action: 'read',
+            expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+        };
+        
+        const file = storage.bucket('idyle').file(path);
+        const url = await file.getSignedUrl(options);
+        if (!url[0]) return false;
+        return url[0];
+
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+}
+
 export const uploadFile = async (path = '', data = '') => { 
     try {
         if (!path) return false;
         await storage.bucket('idyle').file(path).save(data);
-        return true;
+        const operation = await getFile(path);
+        if (!operation) return false;
+        return operation;
     } catch (e) {
         console.error(e);
         return false;
