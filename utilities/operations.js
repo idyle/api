@@ -25,17 +25,17 @@ export const parseConditions = (data, type, conditions) => {
 	for (const condition of conditions) {
 		if (condition instanceof Array) operation = parseConditions(data, condition[0], condition.slice(1));
         else {
-			let { firstArg, secondArg, equality, type, existence, assign, template, prefilter, origin, message } = condition;
+			let { firstArg, secondArg, equality, type, inexistence, existence, assign, template, prefilter, origin, message } = condition;
             let firstArgPath, secondArgPath;
             if (firstArg) firstArgPath = convertArgumentToPath(data, firstArg);
             if (secondArg) secondArgPath = convertArgumentToPath(data, secondArg);
             let actionOriginPath = firstArgPath;
+            if (!firstArg) operation = { status: false, message };
 			if (firstArg && typeof firstArg !== 'string') firstArg = convertPathToString(data, firstArgPath);
 			if (secondArg && typeof secondArg !== 'string') secondArg = convertPathToString(data, secondArgPath);
-			if (equality && secondArg) operation = (firstArg === secondArg) ? { status: true } : { status: false, message };
+			if (equality) operation = (firstArg === secondArg) ? { status: true } : { status: false, message };
             if (type && firstArg) operation = (typeof firstArg === type) ? { status: true } : { status: false, message };
             if (existence && firstArg) operation = { status: true };
-            if (!firstArg) operation = { status: false, message };
             if (operation.status && (assign || template) && origin === 'secondArg' && secondArgPath) actionOriginPath = secondArgPath;
             // allow origin to be customizable, exhibiting the same behavior of firstarg/secondarg
             if (operation.status && (assign || template) && origin && typeof origin !== 'string') actionOriginPath = convertArgumentToPath(data, origin);

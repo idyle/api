@@ -1,6 +1,6 @@
 import express from 'express';
 import { insertHandler, listHandler, updateHandler, setHandler, deleteHandler, getHandler} from './handlers';
-import { paramHandler, authHandler } from '../utilities/handlers';
+import { paramHandler, authHandler, payHandler } from '../utilities/handlers';
 
 const Router = express.Router();
 
@@ -26,6 +26,7 @@ const userMatchesCollection = {
 const userHandler = paramHandler('all', userMatchesCollection);
 
 Router.use(authHandler);
+Router.use(payHandler);
 Router.use('/:op/:collection/:id?', converter);
 Router.use('/:op/:collection/:id?', userHandler);
 Router.post('/insert/:collection/:id', insertHandler);

@@ -1,5 +1,3 @@
-import 'dotenv/config';
-
 import Stripe from 'stripe';
 import { setUserClaims } from '../users/operations';
 
@@ -12,7 +10,7 @@ export const getCheckoutLink = async (uid, planId) => {
     try {
         const config = {
             line_items: [ { price: planId, quantity: 1 }],
-            success_url: "http://localhost:8080/payments/confirm/{CHECKOUT_SESSION_ID}",
+            success_url: "http://localhost:3000/payments?session={CHECKOUT_SESSION_ID}",
             mode: 'subscription',
             client_reference_id: uid
         };
@@ -43,7 +41,7 @@ export const confirmCheckoutSession = async (uid, sessionId) => {
     }
 };
 
-// handler to set subscription - used directly to also renew a subscription
+// handler to set subscription - used directly to also renew a subscription, via users api
 
 export const setSubscription = async (uid, subId) => {
     if (!uid || !subId) return false;
@@ -52,7 +50,10 @@ export const setSubscription = async (uid, subId) => {
         if (!subscription) return false;
         const { id: planId, status, current_period_end: planEnd, items } = subscription;
         // if the subscription is no longer active
-        if (status !== 'active' || planEnd < (Date.now() / 1000)) return false;
+        if (status !== 'active' || planEnd < (Date.now() / 1000)) {
+            await setUserClaims(uid, { planType: undefined, planEnd: undefined, planId: undefined });
+            return false;
+        };
         const planType = items?.data[0]?.price?.id;
         if (!planType || !planEnd || !planId) return false;
         const set = await setUserClaims(uid, { planType, planEnd, planId });
@@ -64,4 +65,17 @@ export const setSubscription = async (uid, subId) => {
     }
 };
 
-
+export const cancelSubscription = async (uid, subId) => {
+    if (!uid || !subId) return false;
+    try {
+        const deleted = await stripe.subscriptions.del(subId, { prorate: true });
+        if (!deleted) return false;
+        const set = await setUserClaims(uid, { planType: undefined, planEnd: undefined, planId: undefined });
+        if (!set) return false;
+        // remove user claims
+        return true;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+};

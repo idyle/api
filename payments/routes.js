@@ -1,6 +1,6 @@
 import express from 'express';
 import { authHandler, paramHandler } from '../utilities/handlers';
-import { checkoutHandler, confirmHandler } from './handlers';
+import { cancelHandler, checkoutHandler, confirmHandler } from './handlers';
 
 const Router = express.Router();
 
@@ -12,9 +12,27 @@ const jwtExists = {
 
 const jwtHandler = paramHandler('all', jwtExists);
 
+const subscriptionDoesNotExist = {
+    firstArg: { from: { from: 'res', find: 'user'}, find: 'planType' },
+    secondArg: undefined,
+    equality: true,
+    message: 'This user has a subscription.'
+};
+
+const noSubHandler = paramHandler('all', subscriptionDoesNotExist);
+
+const subscriptionExists = {
+    firstArg: { from: { from: 'res', find: 'user'}, find: 'planType' },
+    existence: true,
+    message: 'This user does not have a subscription.'
+};
+
+const subHandler = paramHandler('all', subscriptionExists);
+
 Router.use(jwtHandler);
 Router.use(authHandler);
-Router.post('/checkout/:planId', checkoutHandler);
-Router.post('/confirm/:sessionId', confirmHandler);
+Router.post('/checkout/:planId', [ noSubHandler, checkoutHandler ]);
+Router.post('/confirm/:sessionId', [ noSubHandler, confirmHandler ]);
+Router.post('/cancel/:subId', [ subHandler, cancelHandler ]);
 
 export default Router;

@@ -1,3 +1,4 @@
+import { setSubscription } from "../payments/operations";
 import { verifyJWT } from "../users/operations";
 import { parseConditions } from "./operations";
 
@@ -23,4 +24,16 @@ export const authHandler = async (req, res, next) => {
         console.error(e);
         return errHandler(res);
     }  
+};
+
+export const payHandler = async (req, res, next) => {
+    try {
+        if (res.user?.planEnd > (Date.now() / 1000)) return next();
+        const set = await setSubscription(res.user?.uid, res.user?.planId);
+        if (!set) return errHandler(res, 'payError');
+        return next();
+    } catch (e) {
+        console.error(e);
+        return errHandler(res);
+    }
 };
