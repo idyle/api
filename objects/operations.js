@@ -136,3 +136,17 @@ export const archiveFolder = async (path) => {
         return false;
     }
 };
+
+// Internal Operations (created for deployer)
+
+export const createBucket = async (bucketName, metadata = {}) => {
+    if (!bucketName) return false;
+    try {
+        const operation = await storage.createBucket(bucketName, metadata);
+        if (!operation) return false;
+        return operation;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+};

@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/compute": "^3.8.1",
     "@google-cloud/firestore": "^6.4.0",
     "@google-cloud/storage": "^6.5.4",
     "archiver": "^5.3.1",
