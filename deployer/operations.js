@@ -91,3 +91,10 @@ const createUrlMap = async (uid, backendLink) => {
         return false;
     }
 };
+
+// STEPS
+
+// 1. Create a bucket and set parameters
+// 2. Add files (good)
+// 3. Create a backend bucket
+// 4. URL Map
