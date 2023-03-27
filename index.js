@@ -7,6 +7,7 @@ import Users from './users/routes';
 import Documents from './documents/routes';
 import Objects from './objects/routes';
 import Payments from './payments/routes';
+import Deployer from './deployer/routes';
 
 const app = Express();
 const port = process.env.PORT || 8080;
@@ -20,6 +21,7 @@ app.use('/users', Users);
 app.use('/documents', Documents);
 app.use('/objects', Objects);
 app.use('/payments', Payments);
+app.use('/deployer', Deployer);
 
 app.listen(port);
 

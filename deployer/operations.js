@@ -1,5 +1,5 @@
 import 'dotenv/config';
-// temporarily import to access creds
+// temporarily import to access creds (remove redundancy when done)
 
 import { stringify } from 'himalaya';
 import { BackendBucketsClient, GlobalOperationsClient, UrlMapsClient } from '@google-cloud/compute';
