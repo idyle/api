@@ -25,8 +25,8 @@ export const deleteHandler = async (req, res) => {
 
 export const listHandler = async (req, res) => {
     try {
-        const operation = await listFiles(`${res.folder}`);
-        if (!operation || !operation?.length) return errHandler(res, 'operationError');
+        const operation = await listFiles(`${res.folder}`, true);
+        if (!operation) return errHandler(res, 'operationError');
         return res.json({ status: true, list: operation });
     } catch (e) {
         console.error(e);

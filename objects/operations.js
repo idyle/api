@@ -10,6 +10,7 @@ import { Writable } from 'stream';
  */
 
 const storage = new Storage();
+const defaultBucket = process.env.DEFAULT_BUCKET;
 
 export const archiveFiles = (files = []) => {
     return new Promise(resolve => {
@@ -28,7 +29,7 @@ export const archiveFiles = (files = []) => {
     })
 };
 
-export const getFile = async (path = '') => {
+export const getFile = async (path = '', bucket = defaultBucket) => {
     try {
 
         const options = {
@@ -37,7 +38,7 @@ export const getFile = async (path = '') => {
             expires: Date.now() + 15 * 60 * 1000, // 15 minutes
         };
         
-        const file = storage.bucket('idyle').file(path);
+        const file = storage.bucket(bucket).file(path);
         const url = await file.getSignedUrl(options);
         if (!url[0]) return false;
         return url[0];
@@ -48,10 +49,10 @@ export const getFile = async (path = '') => {
     }
 }
 
-export const uploadFile = async (path = '', data = '') => { 
+export const uploadFile = async (path = '', data = '', bucket = defaultBucket) => { 
     try {
         if (!path) return false;
-        await storage.bucket('idyle').file(path).save(data);
+        await storage.bucket(bucket).file(path).save(data);
         const operation = await getFile(path);
         if (!operation) return false;
         return operation;
@@ -61,10 +62,12 @@ export const uploadFile = async (path = '', data = '') => {
     }
 };
 
-export const deleteFile = async (path) => {
+
+
+export const deleteFile = async (path = '', bucket = defaultBucket) => {
     try {
         if (!path) return false;
-        const operation = await storage.bucket('idyle').file(path).delete();
+        const operation = await storage.bucket(bucket).file(path).delete();
         if (!operation) return false;
         return operation;
     } catch (e) {
@@ -73,11 +76,11 @@ export const deleteFile = async (path) => {
     }
 };
 
-export const listFiles = async (path) => {
+export const listFiles = async (path = '', info = false, bucket = defaultBucket) => {
     try {
         if (!path) return false;
         let list = [];
-        const [operation] = await storage.bucket('idyle').getFiles({ prefix: path });
+        const [operation] = await storage.bucket(bucket).getFiles({ prefix: path });
         if (!operation) return false;
 
         const options = {
@@ -86,11 +89,12 @@ export const listFiles = async (path) => {
             expires: Date.now() + 15 * 60 * 1000, // 15 minutes
         };
 
-        for (const item of operation) list.push({
+        for (const item of operation) if (info) list.push({
             name: item.name.split(`${path}/`)[1],
+            path: item.name,
             type: item.metadata.contentType || 'unknown',
             url: await item.getSignedUrl(options)
-        });
+        }); else list.push(item.name);
 
         return list;
     } catch (e) {
@@ -99,10 +103,10 @@ export const listFiles = async (path) => {
     }
 };
 
-export const downloadFile = async (path) => {
+export const downloadFile = async (path = '', bucket = defaultBucket) => {
     try {
         if (!path) return false;
-        const [operation] = await storage.bucket('idyle').file(path).download();
+        const [operation] = await storage.bucket(bucket).file(path).download();
         if (!operation) return false;
         return operation;
     } catch (e) {
@@ -111,14 +115,14 @@ export const downloadFile = async (path) => {
     }
 };
 
-export const archiveFolder = async (path) => {
+export const archiveFolder = async (path = '', bucket = defaultBucket) => {
     try {
         let bufferFilePromises = [], fileNames = [], bufferFiles = [];
         if (!path) return false;
-        const files = await listFiles(path);
+        const files = await listFiles(path, false, bucket);
         if (!files) return false;
         for (const file of files) {
-            bufferFilePromises.push(downloadFile(file));
+            bufferFilePromises.push(downloadFile(file, bucket));
             fileNames.push(file.substring(file.lastIndexOf('/') + 1, file.length));
         };
         const bufferFilesResults = await Promise.all(bufferFilePromises);
@@ -128,7 +132,7 @@ export const archiveFolder = async (path) => {
         };
         const archivedData = await archiveFiles(bufferFiles);
         if (!archivedData) return false;
-        const add = await uploadFile(`archives/${path}.tar.gz`, archivedData);
+        const add = await uploadFile(`archives/${path}.tar.gz`, archivedData, bucket);
         if (!add) return false;
         return true;
     } catch (e) {
@@ -139,10 +143,10 @@ export const archiveFolder = async (path) => {
 
 // Internal Operations (created for deployer)
 
-export const createBucket = async (bucketName, metadata = {}) => {
-    if (!bucketName) return false;
+export const createBucket = async (bucket, metadata = {}) => {
+    if (!bucket) return false;
     try {
-        const operation = await storage.createBucket(bucketName, metadata);
+        const operation = await storage.createBucket(bucket, metadata);
         if (!operation) return false;
         return operation;
     } catch (e) {

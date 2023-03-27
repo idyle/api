@@ -1,8 +1,9 @@
 import 'dotenv/config';
 // temporarily import to access creds
 
+import { stringify } from 'himalaya';
 import { BackendBucketsClient, GlobalOperationsClient, UrlMapsClient } from '@google-cloud/compute';
-import { createBucket } from '../objects/operations';
+// import { createBucket } from '../objects/operations';
 
 const backend = new BackendBucketsClient();
 const operations = new GlobalOperationsClient();
@@ -25,12 +26,12 @@ const project = process.env.PROJECT;
 // createBucket('sample bucket name', metadata);
 
 
-const createBackendBucket = async (uid) => {
-    if (!uid) return false;
+export const createInstance = async (websiteName) => {
+    if (!websiteName) return false;
     try {
         const config = { 
             project,
-            backendBucketResource: { name: uid, bucketName: uid }    
+            backendBucketResource: { name: websiteName, bucketName: websiteName }    
         };
         const [ operation ] = await backend.insert(config);
         console.log(operation);
@@ -44,14 +45,14 @@ const createBackendBucket = async (uid) => {
 };
 
 
-const getOperationStatus = async (operationId) => {
+export const trackOperationStatus = async (operationId) => {
     if (!operationId) return false;
     try {
         const config = {
             project,
             operation: operationId
         };
-        const [ operation ] = await operations.get(config);
+        const [ operation ] = await operations.wait(config);
         if (!operation) return false;
         return operation?.status;
     } catch (e) {
@@ -69,23 +70,54 @@ const getOperationStatus = async (operationId) => {
  * {@link https://cloud.google.com/compute/docs/reference/rest/v1}
  */
 
-const createUrlMap = async (uid, backendLink) => {
+export const createMapping = async (websiteName, backendLink) => {
     if (!uid || !backendLink) return;
     // where backendLink = targetLink
     try {
         const config = {
             project,
-            urlMap: 'loadBalancerName',
+            urlMap: 'lb',
             urlMapResource: {
-                name: 'loadBalancerName',
-                pathMatchers: [ { name: `${uid}-path`, defaultService: backendLink } ],
-                hostRules: [ { hosts: [ `${uid}.idyle.io` ], pathMatcher: `${uid}-path` } ]
+                name: 'lb',
+                pathMatchers: [ { name: `${websiteName}-path`, defaultService: backendLink } ],
+                hostRules: [ { hosts: [ `${websiteName}.idyle.io` ], pathMatcher: `${websiteName}-path` } ]
             }
         };
-        const [ operation ] = await mappings.update(config);
+        const [ operation ] = await mappings.patch(config);
         console.log(operation);
         if (!operation) return false; //should be a metric to see if it updated
         return operation;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+};
+
+export const convertToHtml = (data) => {
+    if (!data) return false;
+    try {
+        let mainElements = [];
+        let mainChildren = data?.children;
+        if (mainChildren instanceof Array) for (const mainChild of mainChildren) {
+            let children = mainChild?.children;
+            if (mainChild?.component === 'h1') children = [{ type: 'text', content: mainChild?.children || '' }];
+            else children = children?.map(child => convertJSONtoHimalayaJSON(child));
+        
+            let attributes = [];
+            for (let [key, value] of Object.entries(mainChild)) {
+                if (key === 'id' || key === 'children' || key === 'component') continue;
+                if (key === 'className') key = 'class';
+                attributes.push({ key, value });
+            };
+        
+            // we are returning a {} consistent with himalaya JSON
+            mainElements.push({ tagName: mainChild?.component, attributes, children });
+            // ids are not necessary because we do not display them any way
+        };
+ 
+        const stringified = stringify(mainElements);
+        if (!stringified) return false;
+        return `<html>${stringified}</html>`;
     } catch (e) {
         console.error(e);
         return false;
@@ -98,3 +130,19 @@ const createUrlMap = async (uid, backendLink) => {
 // 2. Add files (good)
 // 3. Create a backend bucket
 // 4. URL Map
+
+
+// create backend bucket
+
+// createBackendBucket('marcusimperial')
+// .then(a => console.log(a));
+
+// check status of backend bucket
+
+// getOperationStatus('operation-1679644372832-5f7a0ae311090-db4483cb-76fd7aac')
+// .then(a => console.log(a));
+
+// createUrlMap('marcusimperial', 'https://www.googleapis.com/compute/v1/projects/idyleio/global/backendBuckets/marcusimperial')
+// .then(a => console.log(a));
+//https://www.googleapis.com/compute/v1/projects/idyleio/global/backendBuckets/marcusimperial
+
