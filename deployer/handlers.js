@@ -118,7 +118,7 @@ export const convertHandler = async (req, res) => {
         // we are retrieving a particular list, not a singular doc
         const objectsPath = `users/${res.user?.uid}/folders/services/objects/`
         const basePath = `users/${res.user?.uid}/collections/services/`;
-        let sourcePath = `${basePath}editor/pages`;
+        let sourcePath = `${basePath}editor/pages/${req.params?.path}`;
         if (req.query?.source) sourcePath = `${basePath}documents/${req.query?.source}`;
 
         // path should (and can be) any number of slashes
