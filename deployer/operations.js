@@ -10,6 +10,7 @@ const operations = new GlobalOperationsClient();
 const mappings = new UrlMapsClient();
 
 const project = process.env.PROJECT;
+const loadBalancer = process.env.DEFAULT_LOAD_BALANCER;
 
 // processes like CREATING A BUCKET and uploading a file are delegated to objects
 // object operations needs editing to allow for bucket name to be changed
@@ -35,7 +36,7 @@ export const createInstance = async (websiteName) => {
         };
         const [ operation ] = await backend.insert(config);
         console.log(operation);
-        if (!operation) return false;
+        if (!operation || operation?.error) return false;
         return operation;
 
     } catch (e) {
@@ -53,7 +54,8 @@ export const trackOperationStatus = async (operationId) => {
             operation: operationId
         };
         const [ operation ] = await operations.wait(config);
-        if (!operation) return false;
+        console.log('RESULT OF WIATING', operation);
+        if (operation?.error) return false;
         return operation?.status;
     } catch (e) {
         console.error(e);
@@ -70,22 +72,38 @@ export const trackOperationStatus = async (operationId) => {
  * {@link https://cloud.google.com/compute/docs/reference/rest/v1}
  */
 
+const listMappings = async () => {
+    try {
+        const config = { project };
+        const [ [ operation ] ] = await mappings.list(config);
+        if (!operation || operation?.error) return false;
+        return operation;
+
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+};
+
 export const createMapping = async (websiteName, backendLink) => {
-    if (!uid || !backendLink) return;
+    if (!websiteName || !backendLink) return false;
+
+    const list = await listMappings();
+    if (!list) return false;
     // where backendLink = targetLink
     try {
         const config = {
             project,
-            urlMap: 'lb',
+            urlMap: loadBalancer,
             urlMapResource: {
-                name: 'lb',
-                pathMatchers: [ { name: `${websiteName}-path`, defaultService: backendLink } ],
-                hostRules: [ { hosts: [ `${websiteName}.idyle.io` ], pathMatcher: `${websiteName}-path` } ]
+                name: loadBalancer,
+                pathMatchers: [ ...list?.pathMatchers, { name: `${websiteName}-path`, defaultService: backendLink } ],
+                hostRules: [ ...list?.hostRules, { hosts: [ `${websiteName}.idyle.io` ], pathMatcher: `${websiteName}-path` } ]
             }
         };
         const [ operation ] = await mappings.patch(config);
-        console.log(operation);
-        if (!operation) return false; //should be a metric to see if it updated
+        console.log('RESULT OF MAPPING', operation);
+        if (!operation || operation?.error) return false; //should be a metric to see if it updated
         return operation;
     } catch (e) {
         console.error(e);
@@ -145,4 +163,3 @@ export const convertToHtml = (data) => {
 // createUrlMap('marcusimperial', 'https://www.googleapis.com/compute/v1/projects/idyleio/global/backendBuckets/marcusimperial')
 // .then(a => console.log(a));
 //https://www.googleapis.com/compute/v1/projects/idyleio/global/backendBuckets/marcusimperial
-

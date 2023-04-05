@@ -1,6 +1,6 @@
 import express from 'express';
 import { authHandler, paramHandler, payHandler } from '../utilities/handlers';
-import { convertHandler, deployHandler, listHandler, setupHandler } from './handlers';
+import { convertHandler, deployHandler, listHandler, setupHandler, websiteHandler } from './handlers';
 
 const Router = express.Router();
 
@@ -18,6 +18,7 @@ Router.use(payHandler);
 Router.post('/setup/:website', setupHandler);
 Router.post('/deploy/:website', [ filesHandler, deployHandler ]);
 Router.post('/list', listHandler);
+Router.post('/get', websiteHandler);
 Router.post('/convert/:path', convertHandler);
 // setup /:website 
 // deploy /:website + req.body.files + query revert (files exists)

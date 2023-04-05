@@ -1,5 +1,6 @@
 import { getObject, insertObject, listObjects, setObject } from "../documents/operations";
 import { createBucket, deleteFile, downloadFile, listFiles, uploadFile } from "../objects/operations";
+import { setUserClaims } from "../users/operations";
 import { errHandler } from "../utilities/handlers";
 import { convertToHtml, createInstance, createMapping, trackOperationStatus } from "./operations";
 import { randomBytes } from 'crypto';
@@ -7,9 +8,12 @@ import { randomBytes } from 'crypto';
 export const setupHandler = async (req, res) => {
     try {
         // registering the app name 
-        const record = await insertObject(`websites`, req.params?.website, { uid: res.user?.uid });
+        const register = await insertObject(`websites`, req.params?.website, { uid: res.user?.uid });
         // saving a website name via db to avoid duplicates
-        if (!record) return errHandler(res, 'Website name taken.');
+        if (!register) return errHandler(res, 'Website name taken.');
+
+        const record = await setObject(`users`, res.user?.uid, { website: req.params?.website });
+        if (!record) return errHandler(res, 'Could not record website.');
 
         const bucket = await createBucket(req.params?.website);
         // creates bucket; set metadata through another op.
@@ -18,14 +22,28 @@ export const setupHandler = async (req, res) => {
         const instance = await createInstance(req.params?.website);
         if (!instance) return errHandler(res, 'Instance could not be created.');
 
+        console.log('logging the instac', Object.entries(instance));
         // wait for the operation to be completed before adding the mapping
         const status = await trackOperationStatus(instance?.name);
         if (!status) return errHandler(res, 'An error occured with the instance');
 
-        const mapping = await createMapping(req.params?.website, instance?.targetLink);
+        console.log('about to create mapping', req.params?.website, instance?.latestResponse?.targetLink);
+        const mapping = await createMapping(req.params?.website, instance?.latestResponse?.targetLink);
         if (!mapping) return errHandler(res, 'Could not create mapping');
 
         return res.json({ status: true });
+    } catch (e) {
+        console.error(e);
+        return errHandler(res);
+    }
+};
+
+export const websiteHandler = async (req, res) => {
+    try {
+        const operation = await getObject('users', res.user?.uid);
+        if (!operation) return errHandler(res, 'Could not get user.');
+        if (!operation?.website) return errHandler(res, 'The user has no websites.');
+        return res.json({ status: true, website: operation?.website });
     } catch (e) {
         console.error(e);
         return errHandler(res);
