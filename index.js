@@ -8,6 +8,7 @@ import Documents from './documents/routes';
 import Objects from './objects/routes';
 import Payments from './payments/routes';
 import Deployer from './deployer/routes';
+import Editor from './editor/routes';
 
 const app = Express();
 const port = process.env.PORT || 8080;
@@ -22,6 +23,7 @@ app.use('/documents', Documents);
 app.use('/objects', Objects);
 app.use('/payments', Payments);
 app.use('/deployer', Deployer);
+app.use('/editor', Editor);
 
 app.listen(port);
 

@@ -1,8 +1,7 @@
 import { getObject, insertObject, listObjects, setObject } from "../documents/operations";
-import { createBucket, deleteFile, downloadFile, listFiles, uploadFile } from "../objects/operations";
-import { setUserClaims } from "../users/operations";
+import { createBucket, deleteFile, downloadFile, listFiles, makePublic, setMetadata, uploadFile } from "../objects/operations";
 import { errHandler } from "../utilities/handlers";
-import { convertToHtml, createInstance, createMapping, trackOperationStatus } from "./operations";
+import { createInstance, createMapping, trackOperationStatus } from "./operations";
 import { randomBytes } from 'crypto';
 
 export const setupHandler = async (req, res) => {
@@ -12,22 +11,24 @@ export const setupHandler = async (req, res) => {
         // saving a website name via db to avoid duplicates
         if (!register) return errHandler(res, 'Website name taken.');
 
-        const record = await setObject(`users`, res.user?.uid, { website: req.params?.website });
+        const record = await setObject(`users`, res.user?.uid, { website: { name: req.params?.website } });
         if (!record) return errHandler(res, 'Could not record website.');
 
         const bucket = await createBucket(req.params?.website);
         // creates bucket; set metadata through another op.
         if (!bucket) return errHandler(res, 'Source could not be created.');
 
+        // make public
+        const expose = await makePublic(req.params?.website);
+        if (!expose) return errHandler(res, 'Could not make the website public.');
+
         const instance = await createInstance(req.params?.website);
         if (!instance) return errHandler(res, 'Instance could not be created.');
 
-        console.log('logging the instac', Object.entries(instance));
         // wait for the operation to be completed before adding the mapping
         const status = await trackOperationStatus(instance?.name);
         if (!status) return errHandler(res, 'An error occured with the instance');
 
-        console.log('about to create mapping', req.params?.website, instance?.latestResponse?.targetLink);
         const mapping = await createMapping(req.params?.website, instance?.latestResponse?.targetLink);
         if (!mapping) return errHandler(res, 'Could not create mapping');
 
@@ -69,7 +70,7 @@ export const deployHandler = async (req, res) => {
         // we're deleting files in bulk to prep for new file insertions
 
         let fileBufferPromises = [], newFileNames = [], finalFiles = [], stagedFiles = req.body?.files || [];
-        const deployPath = `users/${res.user?.uid}/collections/services/deployer/deploys`;
+        const deployPath = `users/${res.user?.uid}/collections/services/deployer`;
         const objectsPath = `users/${res.user?.uid}/folders/services/objects`
         let id = randomBytes(8).toString('hex');
 
@@ -82,7 +83,7 @@ export const deployHandler = async (req, res) => {
         };
         
         // FULL PATH is required ; edit what is returned from objects
-        for (const newFilePath of stagedFiles) {
+        for (const { path: newFilePath } of stagedFiles) {
             // downloading our files from main user db
             fileBufferPromises.push(downloadFile(`${objectsPath}/${newFilePath}`));
             newFileNames.push(newFilePath.substring(newFilePath.lastIndexOf('/') + 1, newFilePath.length));
@@ -101,11 +102,19 @@ export const deployHandler = async (req, res) => {
         const uploadedFiles = await Promise.all(uploadedFilePromises);
         for (const uploadedFile of uploadedFiles) if (!uploadedFile) return errHandler(res, 'Could not upload files.');
 
-        const record = await setObject(deployPath, id, { files: [ ...stagedFiles ], active: true });
+        // set metadata
+        const mainPageSuffix = (stagedFiles?.find(({ index }) => index) || stagedFiles[0])?.path;
+        const metadata = await setMetadata(req.params?.website, { website: { mainPageSuffix } });
+        if (!metadata) return errHandler(res, 'Could not set website metadata.');
+
+        const record = await setObject(deployPath, id, { files: [ ...stagedFiles ], timestamp: Date.now() });
         // we are SETTING instead of inserting in case the op is to revert an existing deploy
         // we need to use the full path of the file in order to reference it in the future
         // uploading into the web bucket
-        if (!record) return errHandler('Could not compelete deploy');
+        if (!record) return errHandler(res, 'Could not compelete deploy');
+
+        const activate = await setObject(`users`, res.user?.uid, { website: { deploy: id } }, true);
+        if (!activate) return errHandler(res, 'Could not activate website.');
 
         return res.json({ status: true, id });
 
@@ -118,40 +127,10 @@ export const deployHandler = async (req, res) => {
 export const listHandler = async (req, res) => {
     // 1: list objects of deploys with file
     try {
-        const deployPath = `users/${res.user?.uid}/collections/services/deployer/deploys`;
+        const deployPath = `users/${res.user?.uid}/collections/services/deployer`;
         const operation = await listObjects(deployPath, req.query?.filter, req.query?.value);
         if (!operation) return errHandler(res, 'Operation error.');
         return res.json({ status: true, list: operation });
-    } catch (e) {
-        console.error(e);
-        return errHandler(res);
-    }
-};
-
-export const convertHandler = async (req, res) => {
-    try {
-        // possible origin is from users/*/collections/services/editor or
-        // from users/*/collections/services/documents (custom)
-
-        // we are retrieving a particular list, not a singular doc
-        const objectsPath = `users/${res.user?.uid}/folders/services/objects/`
-        const basePath = `users/${res.user?.uid}/collections/services/`;
-        let sourcePath = `${basePath}editor/pages/${req.params?.path}`;
-        if (req.query?.source) sourcePath = `${basePath}documents/${req.query?.source}`;
-
-        // path should (and can be) any number of slashes
-        const pages = await listObjects(sourcePath);
-        if (!pages) return errHandler(res, 'Could not find source.');
-
-        // converting for each file
-        let fileUploadPromises = [];
-        for (const page of pages) fileUploadPromises.push(uploadFile(`${objectsPath}${page?.name}.html`, convertToHtml(page?.data)));
-
-        const uploadedFiles = await Promise.all(fileUploadPromises);
-        for (const uploadedFile of uploadedFiles) if (!uploadedFile) return errHandler(res, 'Could not upload.');
-
-        return res.json({ status: true });
-
     } catch (e) {
         console.error(e);
         return errHandler(res);

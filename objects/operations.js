@@ -78,9 +78,9 @@ export const deleteFile = async (path = '', bucket = defaultBucket) => {
 
 export const listFiles = async (path = '', info = false, bucket = defaultBucket) => {
     try {
-        if (!path) return false;
         let list = [];
         const [operation] = await storage.bucket(bucket).getFiles({ prefix: path });
+        console.log('file list', operation);
         if (!operation) return false;
 
         const options = {
@@ -141,7 +141,7 @@ export const archiveFolder = async (path = '', bucket = defaultBucket) => {
     }
 };
 
-// Internal Operations (created for deployer)
+// internal operations created for deployer
 
 export const createBucket = async (bucket, metadata = {}) => {
     if (!bucket) return false;
@@ -154,3 +154,27 @@ export const createBucket = async (bucket, metadata = {}) => {
         return false;
     }
 };
+
+export const setMetadata = async (bucket, metadata) => {
+    if (!bucket || !metadata) return false;
+    try {
+        const operation = await storage.bucket(bucket).setMetadata(metadata);
+        if (!operation) return false;
+        return operation;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+};
+
+export const makePublic = async (bucket) => {
+    if (!bucket) return false;
+    try {
+        const operation = await storage.bucket(bucket).makePublic();
+        if (!operation) return false;
+        return operation;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+}; 

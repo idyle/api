@@ -117,7 +117,7 @@ export const getUserByUid = async (uid = '') => {
     }
 };
 
-// currently an internal op
+// internal operations created for paymnents
 
 export const setUserClaims = async (uid = '', claims = {}) => {
     try {

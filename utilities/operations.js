@@ -25,7 +25,7 @@ export const parseConditions = (data, type, conditions) => {
 	for (const condition of conditions) {
 		if (condition instanceof Array) operation = parseConditions(data, condition[0], condition.slice(1));
         else {
-			let { firstArg, secondArg, equality, type, inexistence, existence, assign, template, prefilter, origin, message } = condition;
+			let { firstArg, secondArg, equality, type, source, existence, assign, template, prefilter, origin, message } = condition;
             let firstArgPath, secondArgPath;
             if (firstArg) firstArgPath = convertArgumentToPath(data, firstArg);
             if (secondArg) secondArgPath = convertArgumentToPath(data, secondArg);
@@ -36,10 +36,15 @@ export const parseConditions = (data, type, conditions) => {
 			if (equality) operation = (firstArg === secondArg) ? { status: true } : { status: false, message };
             if (type && firstArg) operation = (typeof firstArg === type) ? { status: true } : { status: false, message };
             if (existence && firstArg) operation = { status: true };
+            // allow a custom data source for templating - for both secondArg and custom source
+            let templateSource = firstArg;
+            if (operation.status && template && source === 'secondArg' && secondArg) templateSource = secondArg;
+            if (operation.status && template && source && typeof source !== 'string') templateSource = convertPathToString(data, convertArgumentToPath(data, source));
+
             if (operation.status && (assign || template) && origin === 'secondArg' && secondArgPath) actionOriginPath = secondArgPath;
             // allow origin to be customizable, exhibiting the same behavior of firstarg/secondarg
             if (operation.status && (assign || template) && origin && typeof origin !== 'string') actionOriginPath = convertArgumentToPath(data, origin);
-            if (operation.status && template) data = setObjectFromPath(data, actionOriginPath, template.replace(/\*/g, firstArg));
+            if (operation.status && template) data = setObjectFromPath(data, actionOriginPath, template.replace(/\*/g, templateSource));
             if (operation.status && assign && typeof assign !== 'string') assign = convertPathToString(data, convertArgumentToPath(data, assign));
             if (operation.status && assign) data = setObjectFromPath(data, actionOriginPath, assign);
             if (operation.status && prefilter && typeof prefilter.lookup !== 'string') prefilter.lookup = convertPathToString(data, convertArgumentToPath(data, prefilter.lookup));
