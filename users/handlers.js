@@ -1,5 +1,5 @@
-import { decodeJWT, generateSession, getUserByUid, revokeSession, verifyJWT } from './operations';
-import { errHandler } from '../utilities/handlers';
+import { decodeJWT, generateSession, getUserByUid, revokeSession, verifyJWT } from './operations.js';
+import { errHandler } from '../utilities/handlers.js';
 
 export const generateHandler = async (req, res) => {
     try {

@@ -1,5 +1,5 @@
-import { insertObject, deleteObject, listObjects, updateObject, setObject, getObject } from './operations';
-import { errHandler } from '../utilities/handlers';
+import { insertObject, deleteObject, listObjects, updateObject, setObject, getObject } from './operations.js';
+import { errHandler } from '../utilities/handlers.js';
 
 export const insertHandler = async (req, res) => {
     try {

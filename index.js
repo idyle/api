@@ -3,20 +3,20 @@ import Express from 'express';
 import CookieParser from 'cookie-parser';
 import Cors from 'cors';
 import FileUploader from 'express-fileupload';
-import Users from './users/routes';
-import Documents from './documents/routes';
-import Objects from './objects/routes';
-import Payments from './payments/routes';
-import Deployer from './deployer/routes';
-import Editor from './editor/routes';
+import Users from './users/routes.js';
+import Documents from './documents/routes.js';
+import Objects from './objects/routes.js';
+import Payments from './payments/routes.js';
+import Deployer from './deployer/routes.js';
+import Editor from './editor/routes.js';
 
 const app = Express();
 const port = process.env.PORT || 8080;
 
+app.use(Cors({ credentials: true, origin: true }));
 app.use(Express.urlencoded({ extended: true }));
 app.use(Express.json());
 app.use(CookieParser());
-app.use(Cors({ credentials: true, origin: true }));
 app.use(FileUploader( { limits: { fileSize: 5 * 1024 * 1024 } } ));
 app.use('/users', Users);
 app.use('/documents', Documents);

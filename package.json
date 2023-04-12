@@ -5,7 +5,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --es-module-specifier-resolution=node index.js"
+    "start": "node index.js",
+    "test": "nodemon index.js"
   },
   "keywords": [],
   "author": "",

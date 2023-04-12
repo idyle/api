@@ -1,6 +1,6 @@
 import express from 'express';
-import { generateHandler, verifyHandler, revokeHandler, getUserHandler } from "./handlers";
-import { paramHandler, authHandler } from '../utilities/handlers';
+import { generateHandler, verifyHandler, revokeHandler, getUserHandler } from "./handlers.js";
+import { paramHandler, authHandler } from '../utilities/handlers.js';
 
 const Router = express.Router();
 

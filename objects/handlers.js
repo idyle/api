@@ -1,5 +1,5 @@
-import { uploadFile, archiveFolder, deleteFile, downloadFile, listFiles } from './operations';
-import { errHandler } from '../utilities/handlers';
+import { uploadFile, archiveFolder, deleteFile, downloadFile, listFiles } from './operations.js';
+import { errHandler } from '../utilities/handlers.js';
 
 export const uploadHandler = async (req, res) => {
     try {

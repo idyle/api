@@ -1,7 +1,7 @@
-import { getObject, insertObject, listObjects, setObject } from "../documents/operations";
-import { createBucket, deleteFile, downloadFile, listFiles, makePublic, setMetadata, uploadFile } from "../objects/operations";
-import { errHandler } from "../utilities/handlers";
-import { createInstance, createMapping, trackOperationStatus } from "./operations";
+import { getObject, insertObject, listObjects, setObject } from "../documents/operations.js";
+import { createBucket, deleteFile, downloadFile, listFiles, makePublic, setMetadata, uploadFile } from "../objects/operations.js";
+import { errHandler } from "../utilities/handlers.js";
+import { createInstance, createMapping, trackOperationStatus } from "./operations.js";
 import { randomBytes } from 'crypto';
 
 export const setupHandler = async (req, res) => {

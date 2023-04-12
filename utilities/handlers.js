@@ -1,6 +1,6 @@
-import { setSubscription } from "../payments/operations";
-import { verifyJWT } from "../users/operations";
-import { parseConditions } from "./operations";
+import { setSubscription } from "../payments/operations.js";
+import { verifyJWT } from "../users/operations.js";
+import { parseConditions } from "./operations.js";
 
 export const errHandler = (res, message = 'unknownError') => res.json({ status: false, message });
 

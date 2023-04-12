@@ -1,6 +1,6 @@
 import express from 'express';
-import { uploadHandler, deleteHandler, listHandler, downloadHandler, archiveHandler } from './handlers';
-import { paramHandler, authHandler, payHandler } from '../utilities/handlers';
+import { uploadHandler, deleteHandler, listHandler, downloadHandler, archiveHandler } from './handlers.js';
+import { paramHandler, authHandler, payHandler } from '../utilities/handlers.js';
 
 const Router = express.Router();
 

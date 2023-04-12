@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { setUserClaims } from '../users/operations';
+import { setUserClaims } from '../users/operations.js';
 
 const stripe = new Stripe(process.env.STRIPE_KEY);
 

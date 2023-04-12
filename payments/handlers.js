@@ -1,5 +1,5 @@
-import { errHandler } from "../utilities/handlers";
-import { cancelSubscription, confirmCheckoutSession, getCheckoutLink } from "./operations";
+import { errHandler } from "../utilities/handlers.js";
+import { cancelSubscription, confirmCheckoutSession, getCheckoutLink } from "./operations.js";
 
 export const checkoutHandler = async (req, res) => {
     try {

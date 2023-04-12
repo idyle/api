@@ -1,7 +1,7 @@
-import { deleteObject, getObject, listObjects, setObject } from "../documents/operations";
-import { uploadFile } from "../objects/operations";
-import { errHandler } from "../utilities/handlers";
-import { convertPageToHtml } from "./operations";
+import { deleteObject, getObject, listObjects, setObject } from "../documents/operations.js";
+import { uploadFile } from "../objects/operations.js";
+import { errHandler } from "../utilities/handlers.js";
+import { convertPageToHtml } from "./operations.js";
 
 export const saveHandler = async (req, res) => {
     try {
