@@ -107,7 +107,8 @@ export const deployHandler = async (req, res) => {
         const metadata = await setMetadata(req.params?.website, { website: { mainPageSuffix } });
         if (!metadata) return errHandler(res, 'Could not set website metadata.');
 
-        const record = await setObject(deployPath, id, { files: [ ...stagedFiles ], timestamp: Date.now() });
+        const timestamp = Date.now();
+        const record = await setObject(deployPath, id, { files: [ ...stagedFiles ], timestamp });
         // we are SETTING instead of inserting in case the op is to revert an existing deploy
         // we need to use the full path of the file in order to reference it in the future
         // uploading into the web bucket
@@ -116,7 +117,7 @@ export const deployHandler = async (req, res) => {
         const activate = await setObject(`users`, res.user?.uid, { website: { deploy: id } }, true);
         if (!activate) return errHandler(res, 'Could not activate website.');
 
-        return res.json({ status: true, id });
+        return res.json({ status: true, id, timestamp });
 
     } catch (e) {
         console.error(e);

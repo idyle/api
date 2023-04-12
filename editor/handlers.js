@@ -7,7 +7,6 @@ export const saveHandler = async (req, res) => {
     try {
         // req.params?.page and req.body?.data should be validated in routes
         // replace uid with path: users/${res.user?.uid}/collections/services/editor/data/pages
-        console.log(req.body.page);
         const operation = await setObject(res?.path, req.params?.page, req.body?.page);
         if (!operation) return errHandler(res, 'Could not set a page.');
         return res.json({ status: true });
@@ -19,7 +18,6 @@ export const saveHandler = async (req, res) => {
 
 export const listHandler = async (req, res) => {
     try {
-        console.log('received request');
         // accepts queries
         const operation = await listObjects(res?.path, req.query?.filter, req.query?.value);
         if (!operation) return errHandler(res, 'Could not list pages.');
@@ -44,19 +42,23 @@ export const deleteHandler = async (req, res) => {
 export const convertHandler = async (req, res) => {
     try {
 
+        console.log('CONVERT REQ CALLED');
         // our default origin is pages
         // IF a query?.custom is specified, replace res?.path with docs
 
-        const page = getObject(res?.path, req.params?.page);
+        const page = await getObject(res?.path, req.params?.page);
         if (!page) return errHandler(res, 'Could not find the page.');
+
+        console.log('page data', page);
 
         const string = convertPageToHtml(page?.data);
         if (!string) return errHandler(res, 'Could not convert the page.');
 
         // if the request just wants a string
-        if (req.query?.output === 'string') return res.json({ status: true, page: page?.name, string });
+        if (req.query?.output === 'string') return res.json({ status: true, page: page?.route, string });
 
-        const path = `${page?.name}.html`;
+        const objectsPath = `users/${res.user?.uid}/folders/services/objects`;
+        const path = `${objectsPath}/${page?.route}.html`;
         const upload = await uploadFile(path, string);
         if (!upload) return errHandler(res, 'Could not upload file');
 
@@ -76,13 +78,14 @@ export const convertBatchHandler = async (req, res) => {
 
         // converting for each file
         let convertedPages = [];
-        for (const { name, data } of pages) convertedPages.push({ name, string: convertPageToHtml(data) });
+        for (const { route, data } of pages) convertedPages.push({ route, string: convertPageToHtml(data) });
         
         // if the request just wants a string
         if (req.query?.output === 'string') return res.json({ status: true, pages: convertedPages });
 
         let fileUploadPromises = [];
-        for (const { name, string } of convertedPages) fileUploadPromises.push(uploadFile(`${name}.html`,string));
+        const objectsPath = `users/${res.user?.uid}/collections/services/objects`;
+        for (const { route, string } of convertedPages) fileUploadPromises.push(uploadFile(`${objectsPath}/${route}.html`,string));
         
         const uploadedFiles = await Promise.all(fileUploadPromises);
         for (const uploadedFile of uploadedFiles) if (!uploadedFile) return errHandler(res, 'Could not upload files.');

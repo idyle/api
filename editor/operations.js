@@ -24,7 +24,7 @@ export const convertPageToHtml = (data) => {
  
         const stringified = stringify(mainElements);
         if (!stringified) return false;
-        return `<html>${stringified}</html>`;
+        return `<html><head><script src="https://cdn.tailwindcss.com"></script></head><body><div>${stringified}</div></body></html>`;
     } catch (e) {
         console.error(e);
         return false;

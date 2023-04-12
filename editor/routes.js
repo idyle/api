@@ -1,6 +1,6 @@
 import express from 'express';
 import { authHandler, paramHandler, payHandler } from '../utilities/handlers';
-import { convertBatchHandler, deleteHandler, listHandler, saveHandler } from './handlers';
+import { convertBatchHandler, deleteHandler, listHandler, saveHandler, convertHandler } from './handlers';
 
 const Router = express.Router();
 
@@ -36,7 +36,7 @@ const detectUser = {
     assign: { from: { from: 'res', find: 'user' }, find: 'uid' } 
 };
 
-const convertHandler = paramHandler('optional', detectUser);
+const convertUserHandler = paramHandler('optional', detectUser);
 
 const userMatchesPath = {
     firstArg: { from: 'res', find: 'path' },
@@ -50,7 +50,7 @@ const userHandler = paramHandler('all', userMatchesPath);
 
 Router.use(authHandler);
 Router.use(payHandler);
-Router.use('/:op/:path/:page?', convertHandler);
+Router.use('/:op/:path/:page?', convertUserHandler);
 Router.use('/:op/:path/:page?', userHandler);
 Router.post('/convert/:path/:page', [ customPathHandler, convertHandler ]);
 Router.post('/save/:path/:page', [ pageDataHandler, saveHandler ]);
