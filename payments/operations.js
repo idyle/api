@@ -3,14 +3,14 @@ import { setUserClaims } from '../users/operations.js';
 
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
-// needs some mechanism to check if the uid already has a plan, probably via users API
+const path = process.env.API_BASEPATH;
 
 export const getCheckoutLink = async (uid, planId) => {
     if (!uid || !planId) return false;
     try {
         const config = {
             line_items: [ { price: planId, quantity: 1 }],
-            success_url: "http://localhost:3000/payments?session={CHECKOUT_SESSION_ID}",
+            success_url: `${path}/payments?session={CHECKOUT_SESSION_ID}`,
             mode: 'subscription',
             client_reference_id: uid
         };
