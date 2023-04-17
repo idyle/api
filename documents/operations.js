@@ -1,5 +1,5 @@
 import { Firestore } from '@google-cloud/firestore';
-
+import 'dotenv/config';
 /**
  * Initializes the firebase object using Application Default Credentials (ADC)
  * {@link https://cloud.google.com/docs/authentication/production}
@@ -123,10 +123,23 @@ export const listObjects = async (collection = '', filter = '', value = '') => {
         if (filter && value) query = await firestore.collection(collection).where(filter, "==", value).get();
         else query = await firestore.collection(collection).get();
         for (const object of query.docs) objects.push({ id: object.id, ...object.data() });
-        if (objects.length) return objects;
-        return false;
+        return objects;
     } catch (e) {
         console.error(e);
         return false;
     }
 };
+
+export const countCollection = async (collection = '') => {
+    if (!collection) return false;
+    try {
+        const query = await firestore.collection(collection).count().get();
+        if (!query) return false;
+        return query?.data()?.count;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+};
+
+countCollection('users/7mdXdOSqHPSNUOcYJWfIuNoiXHe2/collections/services/deployer').then(c => console.log(c));
