@@ -1,10 +1,13 @@
 import { uploadFile, archiveFolder, deleteFile, downloadFile, listFiles } from './operations.js';
 import { errHandler } from '../utilities/handlers.js';
+import { deleteObject, insertObject } from '../documents/operations.js';
 
 export const uploadHandler = async (req, res) => {
     try {
-        const operation = await uploadFile(`${res.folder}/${req.params?.file}`, Object.values(req.files)[0]?.data);
+        const { data, size } = Object.values(req.files)[0]
+        const operation = await uploadFile(`${res.folder}/${req.params?.file}`, data);
         if (!operation) return errHandler(res, 'operationError');
+        insertObject(`users/${res.user?.uid}/data`, req.params?.file, { size });
         return res.json({ status: true, file: operation });         
     } catch (e) {
         console.error(e);
@@ -16,6 +19,7 @@ export const deleteHandler = async (req, res) => {
     try {
         const operation = await deleteFile(`${res.folder}/${req.params?.file}`);
         if (!operation) return errHandler(res, 'operationError');
+        deleteObject(`users/${res.user?.uid}/data`, req.params?.file);
         return res.json({ status: true });     
     } catch (e) {
         console.error(e);

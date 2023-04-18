@@ -1,5 +1,6 @@
 import { Firestore } from '@google-cloud/firestore';
-import 'dotenv/config';
+import sizeof from 'firestore-size';
+
 /**
  * Initializes the firebase object using Application Default Credentials (ADC)
  * {@link https://cloud.google.com/docs/authentication/production}
@@ -130,16 +131,4 @@ export const listObjects = async (collection = '', filter = '', value = '') => {
     }
 };
 
-export const countCollection = async (collection = '') => {
-    if (!collection) return false;
-    try {
-        const query = await firestore.collection(collection).count().get();
-        if (!query) return false;
-        return query?.data()?.count;
-    } catch (e) {
-        console.error(e);
-        return false;
-    }
-};
-
-countCollection('users/7mdXdOSqHPSNUOcYJWfIuNoiXHe2/collections/services/deployer').then(c => console.log(c));
+export const calcSize = (object) => (sizeof(object) * 10);

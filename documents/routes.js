@@ -1,6 +1,6 @@
 import express from 'express';
 import { insertHandler, listHandler, updateHandler, setHandler, deleteHandler, getHandler} from './handlers.js';
-import { paramHandler, authHandler, payHandler } from '../utilities/handlers.js';
+import { paramHandler, authHandler, payHandler, dataHandler, reqHandler } from '../utilities/handlers.js';
 
 const Router = express.Router();
 
@@ -27,12 +27,13 @@ const userHandler = paramHandler('all', userMatchesCollection);
 
 Router.use(authHandler);
 Router.use(payHandler);
+Router.use(reqHandler);
 Router.use('/:op/:collection/:id?', converter);
 Router.use('/:op/:collection/:id?', userHandler);
-Router.post('/insert/:collection/:id', insertHandler);
+Router.post('/insert/:collection/:id', [ dataHandler, insertHandler ]);
 Router.post('/list/:collection', listHandler);
-Router.post('/update/:collection/:id', updateHandler);
-Router.post('/set/:collection/:id', setHandler);
+Router.post('/update/:collection/:id', [ dataHandler, updateHandler ]);
+Router.post('/set/:collection/:id', [ dataHandler, setHandler ]);
 Router.post('/delete/:collection/:id', deleteHandler);
 Router.post('/get/:collection/:id', getHandler);
 

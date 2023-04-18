@@ -1,5 +1,5 @@
 import express from 'express';
-import { authHandler, paramHandler, payHandler } from '../utilities/handlers.js';
+import { authHandler, paramHandler, payHandler, reqHandler, dataHandler } from '../utilities/handlers.js';
 import { convertBatchHandler, deleteHandler, listHandler, saveHandler, convertHandler } from './handlers.js';
 
 const Router = express.Router();
@@ -50,10 +50,11 @@ const userHandler = paramHandler('all', userMatchesPath);
 
 Router.use(authHandler);
 Router.use(payHandler);
+Router.use(reqHandler);
 Router.use('/:op/:path/:page?', convertUserHandler);
 Router.use('/:op/:path/:page?', userHandler);
 Router.post('/convert/:path/:page', [ customPathHandler, convertHandler ]);
-Router.post('/save/:path/:page', [ pageDataHandler, saveHandler ]);
+Router.post('/save/:path/:page', [ pageDataHandler, dataHandler, saveHandler ]);
 // Router.post('/update/:path/:page', [ pageDataHandler, updateHandler ]);
 Router.post('/batchconvert/:path', convertBatchHandler);
 // Router.post('/get/:path/:page', getHandler);

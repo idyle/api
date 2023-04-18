@@ -1,14 +1,13 @@
-import { deleteObject, getObject, listObjects, setObject } from "../documents/operations.js";
+import { calcSize, deleteObject, getObject, listObjects, setObject } from "../documents/operations.js";
 import { uploadFile } from "../objects/operations.js";
 import { errHandler } from "../utilities/handlers.js";
 import { convertPageToHtml } from "./operations.js";
 
 export const saveHandler = async (req, res) => {
     try {
-        // req.params?.page and req.body?.data should be validated in routes
-        // replace uid with path: users/${res.user?.uid}/collections/services/editor/data/pages
         const operation = await setObject(res?.path, req.params?.page, req.body?.page);
         if (!operation) return errHandler(res, 'Could not set a page.');
+        setObject(`users/${res.user?.uid}/data`, req.params?.page, { size: calcSize(req.body?.page) });
         return res.json({ status: true });
     } catch (e) {
         console.error(e);
@@ -32,6 +31,7 @@ export const deleteHandler = async (req, res) => {
     try {
         const operation = await deleteObject(res?.path, req.params?.page);
         if (!operation) return errHandler(res, 'Could not delete page.');
+        deleteObject(`users/${res.user?.uid}/data`, req.params?.page);
         return res.json({ status: true});
     } catch (e) {
         console.error(e);

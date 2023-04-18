@@ -1,6 +1,6 @@
 import express from 'express';
 import { uploadHandler, deleteHandler, listHandler, downloadHandler, archiveHandler } from './handlers.js';
-import { paramHandler, authHandler, payHandler } from '../utilities/handlers.js';
+import { paramHandler, authHandler, payHandler, dataHandler, reqHandler } from '../utilities/handlers.js';
 
 const Router = express.Router();
 
@@ -27,9 +27,10 @@ const userHandler = paramHandler('all', userMatchesFolder);
 
 Router.use(authHandler);
 Router.use(payHandler);
+Router.use(reqHandler);
 Router.use('/:op/:folder/:file?', converter);
 Router.use('/:op/:folder/:file?', userHandler);
-Router.post('/upload/:folder/:file', uploadHandler);
+Router.post('/upload/:folder/:file', [ dataHandler, uploadHandler ]);
 Router.post('/list/:folder', listHandler);
 Router.post('/delete/:folder/:file', deleteHandler);
 Router.post('/download/:folder/:file', downloadHandler);

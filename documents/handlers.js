@@ -1,10 +1,11 @@
-import { insertObject, deleteObject, listObjects, updateObject, setObject, getObject } from './operations.js';
+import { insertObject, deleteObject, listObjects, updateObject, setObject, getObject, calcSize } from './operations.js';
 import { errHandler } from '../utilities/handlers.js';
 
 export const insertHandler = async (req, res) => {
     try {
         const operation = await insertObject(res.collection, req.params.id, req.body?.object);
         if (!operation) return errHandler(res, 'operationError');
+        setObject(`users/${res.user?.uid}/data`, req.params.id, { size: calcSize(req.body?.object) });
         return res.json({ status: true });
     } catch (e) {
         console.error(e);
@@ -28,6 +29,7 @@ export const updateHandler = async (req, res) => {
     try {
         const operation = await updateObject(res.collection, req.params.id, req.body?.object);
         if (!operation) return errHandler(res, 'operationError');
+        setObject(`users/${res.user?.uid}/data`, req.params.id, { size: calcSize(req.body?.object)});
         return res.json({ status: true });
     } catch (e) {
         console.error(e);
@@ -39,6 +41,7 @@ export const setHandler = async (req, res) => {
     try {
         const operation = await setObject(res.collection, req.params.id, req.body?.object, req.query.merge);
         if (!operation) return errHandler(res, 'operationError');
+        setObject(`users/${res.user?.uid}/data`, req.params.id, { size: calcSize(req.body?.object)});
         return res.json({ status: true });
     } catch (e) {
         console.error(e);
@@ -50,6 +53,7 @@ export const deleteHandler = async (req, res) => {
     try {
         const operation = await deleteObject(res.collection, req.params.id);
         if (!operation) return errHandler(res, 'operationError');
+        deleteObject(`users/${res.user?.uid}/data`, req.params.id);
         return res.json({ status: true });
     } catch (e) {
         console.error(e);

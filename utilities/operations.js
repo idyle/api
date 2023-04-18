@@ -1,3 +1,17 @@
+import { RateLimiterMemory } from "rate-limiter-flexible";
+
+const rateLimiter = new RateLimiterMemory({ points: 60, duration: 60 });
+
+export const rateLimit = async (key, points = 1) => {
+    try {        
+        const consume = await rateLimiter.consume(key, points);
+        if (!consume) return false;
+        return true;
+    } catch {
+        return false
+    }
+};
+
 const setObjectFromPath = (data, path, value) => {
     let current = data;
     for (let depth = 0; depth < path.length - 1; depth++) current = current[path[depth]];

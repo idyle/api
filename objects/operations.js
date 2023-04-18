@@ -80,7 +80,6 @@ export const listFiles = async (path = '', info = false, bucket = defaultBucket)
     try {
         let list = [];
         const [operation] = await storage.bucket(bucket).getFiles({ prefix: path });
-        console.log('file list', operation);
         if (!operation) return false;
 
         const options = {

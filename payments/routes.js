@@ -1,5 +1,5 @@
 import express from 'express';
-import { authHandler, paramHandler } from '../utilities/handlers.js';
+import { authHandler, paramHandler, reqHandler } from '../utilities/handlers.js';
 import { cancelHandler, checkoutHandler, confirmHandler } from './handlers.js';
 
 const Router = express.Router();
@@ -31,6 +31,7 @@ const subHandler = paramHandler('all', subscriptionExists);
 
 Router.use(jwtHandler);
 Router.use(authHandler);
+Router.use(reqHandler);
 Router.post('/checkout/:planId', [ noSubHandler, checkoutHandler ]);
 Router.post('/confirm/:sessionId', [ noSubHandler, confirmHandler ]);
 Router.post('/cancel/:subId', [ subHandler, cancelHandler ]);

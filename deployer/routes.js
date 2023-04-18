@@ -1,5 +1,5 @@
 import express from 'express';
-import { authHandler, paramHandler, payHandler } from '../utilities/handlers.js';
+import { authHandler, paramHandler, payHandler, reqHandler } from '../utilities/handlers.js';
 import { deployHandler, listHandler, setupHandler, websiteHandler } from './handlers.js';
 
 const Router = express.Router();
@@ -14,7 +14,7 @@ const filesHandler = paramHandler('all', filesExist);
 
 Router.use(authHandler);
 Router.use(payHandler);
-
+Router.use(reqHandler);
 Router.post('/setup/:website', setupHandler);
 Router.post('/deploy/:website', [ filesHandler, deployHandler ]);
 Router.post('/list', listHandler);

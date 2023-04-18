@@ -1,6 +1,6 @@
 import express from 'express';
 import { generateHandler, verifyHandler, revokeHandler, getUserHandler } from "./handlers.js";
-import { paramHandler, authHandler } from '../utilities/handlers.js';
+import { paramHandler, authHandler, reqHandler } from '../utilities/handlers.js';
 
 const Router = express.Router();
 
@@ -36,6 +36,7 @@ Router.post('/generate', generateHandler);
 Router.post('/verify', verifyHandler);
 Router.post('/revoke', revokeHandler);
 Router.use(authHandler);
+Router.use(reqHandler);
 Router.post('/user/:uid', [ converter, userHandler, getUserHandler ]);
 
 export default Router;
