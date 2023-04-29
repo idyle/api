@@ -1,6 +1,6 @@
 import express from 'express';
 import { authHandler, paramHandler, reqHandler } from '../utilities/handlers.js';
-import { cancelHandler, checkoutHandler, confirmHandler } from './handlers.js';
+import { cancelHandler, checkoutHandler, confirmHandler, metricsHandler } from './handlers.js';
 
 const Router = express.Router();
 
@@ -35,5 +35,6 @@ Router.use(reqHandler);
 Router.post('/checkout/:planId', [ noSubHandler, checkoutHandler ]);
 Router.post('/confirm/:sessionId', [ noSubHandler, confirmHandler ]);
 Router.post('/cancel/:subId', [ subHandler, cancelHandler ]);
+Router.post('/metrics', [ subHandler, metricsHandler ]);
 
 export default Router;
