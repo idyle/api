@@ -1,5 +1,5 @@
 import express from 'express';
-import { uploadHandler, deleteHandler, listHandler, downloadHandler, archiveHandler } from './handlers.js';
+import { uploadHandler, deleteHandler, listHandler, downloadHandler, archiveHandler, getHandler } from './handlers.js';
 import { paramHandler, authHandler, payHandler, dataHandler, reqHandler } from '../utilities/handlers.js';
 
 const Router = express.Router();
@@ -34,6 +34,7 @@ Router.post('/upload/:folder/:file', [ dataHandler, uploadHandler ]);
 Router.post('/list/:folder', listHandler);
 Router.post('/delete/:folder/:file', deleteHandler);
 Router.post('/download/:folder/:file', downloadHandler);
+Router.post('/get/:folder/:file', getHandler);
 Router.post('/archive/:folder', archiveHandler);
 
 export default Router;

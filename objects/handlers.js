@@ -1,4 +1,4 @@
-import { uploadFile, archiveFolder, deleteFile, downloadFile, listFiles } from './operations.js';
+import { uploadFile, archiveFolder, deleteFile, downloadFile, listFiles, getFile } from './operations.js';
 import { errHandler } from '../utilities/handlers.js';
 import { deleteObject, insertObject } from '../documents/operations.js';
 
@@ -32,6 +32,17 @@ export const listHandler = async (req, res) => {
         const operation = await listFiles(`${res.folder}`, true);
         if (!operation) return errHandler(res, 'operationError');
         return res.json({ status: true, list: operation });
+    } catch (e) {
+        console.error(e);
+        return errHandler(res);
+    }
+};
+
+export const getHandler = async (req, res) => {
+    try {
+        const operation = await getFile(`${res.folder}/${req.params?.file}`);
+        if (!operation) return errHandler(res, 'operationError');
+        return res.json({ status: true, file: operation });     
     } catch (e) {
         console.error(e);
         return errHandler(res);

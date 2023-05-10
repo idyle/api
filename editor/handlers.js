@@ -2,13 +2,15 @@ import { calcSize, deleteObject, getObject, listObjects, setObject } from "../do
 import { uploadFile } from "../objects/operations.js";
 import { errHandler } from "../utilities/handlers.js";
 import { convertPageToHtml } from "./operations.js";
+import { randomBytes } from 'crypto';
 
 export const saveHandler = async (req, res) => {
     try {
-        const operation = await setObject(res?.path, req.params?.page, req.body?.page);
+        const id = req.params?.id ? req.params?.id : randomBytes(8).toString('hex');
+        const operation = await setObject(res?.path, id, req.body?.page);
         if (!operation) return errHandler(res, 'Could not set a page.');
-        setObject(`users/${res.user?.uid}/data`, req.params?.page, { size: calcSize(req.body?.page) });
-        return res.json({ status: true });
+        setObject(`users/${res.user?.uid}/data`, id, { size: calcSize(req.body?.page) });
+        return res.json({ status: true, id });
     } catch (e) {
         console.error(e);
         return errHandler(res);
@@ -29,9 +31,9 @@ export const listHandler = async (req, res) => {
 
 export const deleteHandler = async (req, res) => {
     try {
-        const operation = await deleteObject(res?.path, req.params?.page);
+        const operation = await deleteObject(res?.path, req.params?.id);
         if (!operation) return errHandler(res, 'Could not delete page.');
-        deleteObject(`users/${res.user?.uid}/data`, req.params?.page);
+        deleteObject(`users/${res.user?.uid}/data`, req.params?.id);
         return res.json({ status: true});
     } catch (e) {
         console.error(e);
@@ -46,7 +48,7 @@ export const convertHandler = async (req, res) => {
         // our default origin is pages
         // IF a query?.custom is specified, replace res?.path with docs
 
-        const page = await getObject(res?.path, req.params?.page);
+        const page = await getObject(res?.path, req.params?.id);
         if (!page) return errHandler(res, 'Could not find the page.');
 
         console.log('page data', page);
