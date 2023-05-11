@@ -29,12 +29,23 @@ export const listHandler = async (req, res) => {
     }
 };
 
+export const getHandler = async (req, res) => {
+    try {
+        const operation = await getObject(res?.path, req.params?.id);
+        if (!operation) return errHandler(res, 'Could not get page.');
+        return res.json({ status: true, page: operation });
+    } catch (e) {
+        console.error(e);
+        return errHandler(res);
+    }
+};
+
 export const deleteHandler = async (req, res) => {
     try {
         const operation = await deleteObject(res?.path, req.params?.id);
         if (!operation) return errHandler(res, 'Could not delete page.');
         deleteObject(`users/${res.user?.uid}/data`, req.params?.id);
-        return res.json({ status: true});
+        return res.json({ status: true });
     } catch (e) {
         console.error(e);
         return errHandler(res);

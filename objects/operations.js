@@ -38,6 +38,8 @@ export const getFile = async (path = '', bucket = defaultBucket) => {
             expires: Date.now() + 12 * 60 * 60 * 1000, // 12 hrs
         };
 
+        const file = storage.bucket(bucket).file(path);
+
         return {
             name: file.name.split('/')[file.name.split('/').length - 1],
             path: file.name,
