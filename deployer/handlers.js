@@ -1,36 +1,50 @@
 import { getObject, insertObject, listObjects, setObject } from "../documents/operations.js";
 import { createBucket, deleteFile, downloadFile, listFiles, makePublic, setMetadata, uploadFile } from "../objects/operations.js";
 import { errHandler } from "../utilities/handlers.js";
-import { createInstance, createMapping, trackOperationStatus } from "./operations.js";
+import { connectDomain, createInstance, createMapping, disconnectDomain, trackOperationStatus } from "./operations.js";
 import { randomBytes } from 'crypto';
 
 export const setupHandler = async (req, res) => {
     try {
+        const source = `idyle-${randomBytes(8).toString('hex')}`;
         // registering the app name 
-        const register = await insertObject(`websites`, req.params?.website, { uid: res.user?.uid });
+        const register = await insertObject(`websites`, req.params?.website, { uid: res.user?.uid, source });
         // saving a website name via db to avoid duplicates
         if (!register) return errHandler(res, 'Website name taken.');
 
-        const record = await setObject(`users`, res.user?.uid, { website: { name: req.params?.website } });
+        console.log('website registed!');
+
+        const record = await setObject(`users`, res.user?.uid, { website: { name: req.params?.website, source } });
         if (!record) return errHandler(res, 'Could not record website.');
 
-        const bucket = await createBucket(req.params?.website);
+        console.log('website recorded!');
+
+        const bucket = await createBucket(source);
         // creates bucket; set metadata through another op.
         if (!bucket) return errHandler(res, 'Source could not be created.');
 
+        console.log('source created');
+
         // make public
-        const expose = await makePublic(req.params?.website);
+        const expose = await makePublic(source);
         if (!expose) return errHandler(res, 'Could not make the website public.');
 
-        const instance = await createInstance(req.params?.website);
+        console.log('source exposed')
+
+        const instance = await createInstance(req.params?.website, source);
         if (!instance) return errHandler(res, 'Instance could not be created.');
+
+        console.log('instance created');
 
         // wait for the operation to be completed before adding the mapping
         const status = await trackOperationStatus(instance?.name);
+        console.log(status, 'status');
         if (!status) return errHandler(res, 'An error occured with the instance');
 
         const mapping = await createMapping(req.params?.website, instance?.latestResponse?.targetLink);
         if (!mapping) return errHandler(res, 'Could not create mapping');
+
+        console.log('mapping created');
 
         return res.json({ status: true });
     } catch (e) {
@@ -58,13 +72,14 @@ export const deployHandler = async (req, res) => {
         // verify that the user owns the website (whole-net db)
         const website = await getObject('websites', req.params?.website);
         if (website?.uid !== res.user?.uid) return errHandler(res, 'User does not own website.');
+        console.log('web source', website?.source);
 
-        const currentFiles = await listFiles('', false, req.params?.website);
+        const currentFiles = await listFiles('', false, website?.source);
         // difference between this op returning false and having length === 0
         if (!currentFiles) return errHandler(res, 'Could not get bucket.');
 
         let deleteFilePromises = [];
-        for (const currentFile of currentFiles) deleteFilePromises.push(deleteFile(currentFile, req.params?.website));
+        for (const currentFile of currentFiles) deleteFilePromises.push(deleteFile(currentFile, website?.source));
         const deletedFiles = await Promise.all(deleteFilePromises);
         for (const deletedFile of deletedFiles) if (!deletedFile) return errHandler(res, 'Could not remove past files');
         // we're deleting files in bulk to prep for new file insertions
@@ -96,15 +111,15 @@ export const deployHandler = async (req, res) => {
         };
 
         let uploadedFilePromises = [];
-        for (const { path, data } of finalFiles) uploadedFilePromises.push(uploadFile(path, data, req.params?.website));
+        for (const { path, data } of finalFiles) uploadedFilePromises.push(uploadFile(path.split('.')?.[0], data, website?.source, { contentType: 'text/html' }));
         // uploading into the website
         
         const uploadedFiles = await Promise.all(uploadedFilePromises);
         for (const uploadedFile of uploadedFiles) if (!uploadedFile) return errHandler(res, 'Could not upload files.');
 
         // set metadata
-        const mainPageSuffix = (stagedFiles?.find(({ index }) => index) || stagedFiles[0])?.path;
-        const metadata = await setMetadata(req.params?.website, { website: { mainPageSuffix } });
+        const mainPageSuffix = (stagedFiles?.find(({ index }) => index) || stagedFiles[0])?.path?.split('.')?.[0];
+        const metadata = await setMetadata(website?.source, { website: { mainPageSuffix } });
         if (!metadata) return errHandler(res, 'Could not set website metadata.');
 
         const timestamp = Date.now();
@@ -132,6 +147,37 @@ export const listHandler = async (req, res) => {
         const operation = await listObjects(deployPath, req.query?.filter, req.query?.value);
         if (!operation) return errHandler(res, 'Operation error.');
         return res.json({ status: true, list: operation });
+    } catch (e) {
+        console.error(e);
+        return errHandler(res);
+    }
+};
+
+export const connectHandler = async (req, res) => {
+    try {
+
+        const user = await getObject('users', res.user?.uid);
+        if (user?.website?.domain?.id) return errHandler(res, 'Domain already exists');
+
+        // operation via API request to cloudflare; needs creds 
+        const operation = await connectDomain(req.params?.domain);
+        if (!operation) return errHandler(res, 'Could not connect domain.');
+        setObject('users', res.user?.uid, { website: { domain: { name: req.params?.domain, id: operation?.id } } }, true);
+        return res.json({ status: true });
+    } catch (e) {
+        console.error(e);
+        return errHandler(res);
+    }
+};
+
+export const disconnectHandler = async (req, res) => {
+    try {
+        const user = await getObject('users', res.user?.uid);
+        if (!user?.website?.domain?.id) return errHandler(res, 'No domain exists'); 
+        const operation = await disconnectDomain(user?.website?.domain?.id);
+        if (!operation) return errHandler(res, 'Could not disconnect domain.');
+        setObject('users', res.user?.uid, { website: { domain: null } }, true);
+        return res.json({ status: true });
     } catch (e) {
         console.error(e);
         return errHandler(res);

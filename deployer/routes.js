@@ -1,6 +1,6 @@
 import express from 'express';
 import { authHandler, paramHandler, payHandler, reqHandler } from '../utilities/handlers.js';
-import { deployHandler, listHandler, setupHandler, websiteHandler } from './handlers.js';
+import { connectHandler, deployHandler, disconnectHandler, listHandler, setupHandler, websiteHandler } from './handlers.js';
 
 const Router = express.Router();
 
@@ -19,5 +19,7 @@ Router.post('/setup/:website', setupHandler);
 Router.post('/deploy/:website', [ filesHandler, deployHandler ]);
 Router.post('/list', listHandler);
 Router.post('/get', websiteHandler);
+Router.post('/connect/:domain', connectHandler);
+Router.post('/disconnect', disconnectHandler);
 
 export default Router;

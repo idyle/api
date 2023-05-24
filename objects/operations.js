@@ -53,11 +53,13 @@ export const getFile = async (path = '', bucket = defaultBucket) => {
     }
 }
 
-export const uploadFile = async (path = '', data = '', bucket = defaultBucket) => { 
+export const uploadFile = async (path = '', data = '', bucket = defaultBucket, metadata) => { 
     try {
         if (!path) return false;
-        await storage.bucket(bucket).file(path).save(data);
-        const operation = await getFile(path);
+        let options;
+        if (metadata) options = { metadata };
+        await storage.bucket(bucket).file(path).save(data, options);
+        const operation = await getFile(path, bucket);
         if (!operation) return false;
         return operation;
     } catch (e) {
@@ -65,8 +67,6 @@ export const uploadFile = async (path = '', data = '', bucket = defaultBucket) =
         return false;
     }
 };
-
-
 
 export const deleteFile = async (path = '', bucket = defaultBucket) => {
     try {
@@ -181,3 +181,15 @@ export const makePublic = async (bucket) => {
         return false;
     }
 }; 
+
+export const makeFilePublic = async (path = '', bucket = defaultBucket) => {
+    if (!path || !bucket) return false;
+    try {
+        const operation = await storage.bucket(bucket).file(path).makePublic();
+        if (!operation) return false;
+        return operation;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+};

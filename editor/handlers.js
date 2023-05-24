@@ -55,16 +55,16 @@ export const deleteHandler = async (req, res) => {
 export const convertHandler = async (req, res) => {
     try {
 
-        console.log('CONVERT REQ CALLED');
-        // our default origin is pages
-        // IF a query?.custom is specified, replace res?.path with docs
+        const doc = await getObject(res?.path, req.params?.id);
+        if (!doc) return errHandler(res, 'Could not find the page.');
 
-        const page = await getObject(res?.path, req.params?.id);
-        if (!page) return errHandler(res, 'Could not find the page.');
+        let page = doc;
+        // page === page by default (standard)
+        if (req.query?.type === 'custom') page = { data: doc, route: doc?.id, metadata: doc?.metadata };
+        // distinguish between a custom and standard input
+        console.log('entry page', page);
 
-        console.log('page data', page);
-
-        const string = convertPageToHtml(page?.data);
+        const string = convertPageToHtml(page?.data, page?.metadata);
         if (!string) return errHandler(res, 'Could not convert the page.');
 
         // if the request just wants a string
@@ -74,7 +74,7 @@ export const convertHandler = async (req, res) => {
         const path = `${objectsPath}/${page?.route}.html`;
         const upload = await uploadFile(path, string);
         if (!upload) return errHandler(res, 'Could not upload file');
-
+        console.log('returning a response');
         return res.json({ status: true, path });
 
     } catch (e) {
@@ -91,13 +91,13 @@ export const convertBatchHandler = async (req, res) => {
 
         // converting for each file
         let convertedPages = [];
-        for (const { route, data } of pages) convertedPages.push({ route, string: convertPageToHtml(data) });
+        for (const page of pages) convertedPages.push({ route: page?.route, string: convertPageToHtml(page?.data, page?.metadata) });
         
         // if the request just wants a string
         if (req.query?.output === 'string') return res.json({ status: true, pages: convertedPages });
 
         let fileUploadPromises = [];
-        const objectsPath = `users/${res.user?.uid}/collections/services/objects`;
+        const objectsPath = `users/${res.user?.uid}/folders/services/objects`;
         for (const { route, string } of convertedPages) fileUploadPromises.push(uploadFile(`${objectsPath}/${route}.html`,string));
         
         const uploadedFiles = await Promise.all(fileUploadPromises);

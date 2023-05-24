@@ -1,4 +1,4 @@
-import { uploadFile, archiveFolder, deleteFile, downloadFile, listFiles, getFile } from './operations.js';
+import { uploadFile, archiveFolder, deleteFile, downloadFile, listFiles, getFile, makeFilePublic } from './operations.js';
 import { errHandler } from '../utilities/handlers.js';
 import { deleteObject, insertObject } from '../documents/operations.js';
 
@@ -65,6 +65,17 @@ export const archiveHandler = async (req, res) => {
         const operation = await archiveFolder(`${res.folder}`);
         if (!operation) return errHandler(res, 'operationError');
         return res.json({ status: true });
+    } catch (e) {
+        console.error(e);
+        return errHandler(res);
+    }
+};
+
+export const publicHandler = async (req, res) => {
+    try {
+        const operation = await makeFilePublic(`${res.folder}/${req.params?.file}`)
+        if (!operation) return errHandler(res, 'Could not make the file public.');
+        return res.json({ status: true }); 
     } catch (e) {
         console.error(e);
         return errHandler(res);
