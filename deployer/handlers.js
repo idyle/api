@@ -1,7 +1,7 @@
 import { getObject, insertObject, listObjects, setObject } from "../documents/operations.js";
 import { createBucket, deleteFile, downloadFile, listFiles, makePublic, setMetadata, uploadFile } from "../objects/operations.js";
 import { errHandler } from "../utilities/handlers.js";
-import { connectDomain, createInstance, createMapping, disconnectDomain, trackOperationStatus } from "./operations.js";
+import { connectDomain, createInstance, createMapping, disconnectDomain, listMappings, removeMapping, setMappings, trackOperationStatus } from "./operations.js";
 import { randomBytes } from 'crypto';
 
 export const setupHandler = async (req, res) => {
@@ -160,9 +160,16 @@ export const connectHandler = async (req, res) => {
         if (user?.website?.domain?.id) return errHandler(res, 'Domain already exists');
 
         // operation via API request to cloudflare; needs creds 
-        const operation = await connectDomain(req.params?.domain);
-        if (!operation) return errHandler(res, 'Could not connect domain.');
-        setObject('users', res.user?.uid, { website: { domain: { name: req.params?.domain, id: operation?.id } } }, true);
+        const connect = await connectDomain(req.params?.domain);
+        if (!connect) return errHandler(res, 'Could not connect domain.');
+
+        const mappings = await listMappings();
+        if (!mappings) return errHandler(res, 'Could not prepare mapping.');
+
+        const mapping = await setMappings(mappings?.pathMatchers, [ ...mappings?.hostRules, { hosts: [ req.params?.domain ], pathMatcher: `${user?.website?.name}-path` } ]);
+        if (!mapping) return errHandler(res, 'Could not create domain mapping');
+
+        setObject('users', res.user?.uid, { website: { domain: { name: req.params?.domain, id: connect?.id } } }, true);
         return res.json({ status: true });
     } catch (e) {
         console.error(e);
@@ -174,8 +181,16 @@ export const disconnectHandler = async (req, res) => {
     try {
         const user = await getObject('users', res.user?.uid);
         if (!user?.website?.domain?.id) return errHandler(res, 'No domain exists'); 
-        const operation = await disconnectDomain(user?.website?.domain?.id);
-        if (!operation) return errHandler(res, 'Could not disconnect domain.');
+
+        const disconnect = await disconnectDomain(user?.website?.domain?.id);
+        if (!disconnect) return errHandler(res, 'Could not disconnect domain.');
+
+        const mappings = await listMappings();
+        if (!mappings) return errHandler(res, 'Could not prepare mapping.');
+
+        const mapping = await setMappings(mappings?.pathMatchers, mappings?.hostRules?.filter(( { hosts }) => hosts[0] !== user?.website?.domain?.name )); 
+        if (!mapping) return errHandler(res, 'Could not remove domain mapping');
+
         setObject('users', res.user?.uid, { website: { domain: null } }, true);
         return res.json({ status: true });
     } catch (e) {

@@ -42,7 +42,7 @@ export const trackOperationStatus = async (operationId) => {
     };
 };
 
-const listMappings = async () => {
+export const listMappings = async () => {
     try {
         const config = { project };
         const [ [ operation ] ] = await mappings.list(config);
