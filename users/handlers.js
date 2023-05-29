@@ -5,7 +5,7 @@ export const generateHandler = async (req, res) => {
     try {
         const sessionCookie = await generateSession(req.headers.authorization?.split('Bearer ')[1]);
         if (!sessionCookie) return errHandler(res, 'operationError');
-        const cookieOptions = { maxAge: sessionCookie.expiry.expiresIn, httpOnly: true, secure: true, domain: 'idyle.io' };
+        const cookieOptions = { maxAge: sessionCookie.expiry.expiresIn, httpOnly: true, secure: true };
         res.cookie('session', sessionCookie.cookie, cookieOptions);
         return res.json({ status: true, session: sessionCookie.cookie });
     } catch (e) {
