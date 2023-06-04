@@ -1,17 +1,18 @@
 import { stringify } from 'himalaya';
 
-const convertJSONtoHimalayaJSON = (config, toggle = true) => {
+const convertJSONtoHimalayaJSON = (config) => {
     // we are basing this off our built in JSON
     let children = config.children;
     // divs, imgs, vids are exceptions
-    if (config.component === 'div') children = children?.map(child => convertJSONtoHimalayaJSON(child, toggle));
+    if (config.component === 'div') children = children?.map(child => convertJSONtoHimalayaJSON(child));
     else children = [{ type: 'text', content: config.children || '' }];
 
     let attributes = [];
     for (let [key, value] of Object.entries(config)) {
         if (key === 'id' || key === 'children' || key === 'component') continue;
+        if (value instanceof Array && value?.length < 1) continue;
+        if (typeof value === 'object' && Object.values(value)?.length < 1) continue; 
         if (key === 'className') key = 'class';
-        if (key === 'className' && !toggle) value = '';
         attributes.push({ key, value });
     };
 
@@ -20,13 +21,12 @@ const convertJSONtoHimalayaJSON = (config, toggle = true) => {
     // ids are not necessary because we do not display them any way
 };
 
-export const convertPageToHtml = (data, metadata) => {
-    console.log('entered data', data);
+export const convertPageToHtml = (data, metadata, route) => {
     if (!data) return false;
     try {
-        const converted = convertJSONtoHimalayaJSON(data)
+        const converted = convertJSONtoHimalayaJSON(data);
+        if (!converted) return false;
         const stringified = stringify([ converted ]);
-        console.log('stringifined', stringified);
         if (!stringified) return false;
         let head = '', toggle = metadata?.toggle ?? true;
         // metadata contains toggle and css props
