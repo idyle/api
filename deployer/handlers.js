@@ -72,7 +72,6 @@ export const deployHandler = async (req, res) => {
         // verify that the user owns the website (whole-net db)
         const website = await getObject('websites', req.params?.website);
         if (website?.uid !== res.user?.uid) return errHandler(res, 'User does not own website.');
-        console.log('web source', website?.source);
 
         const currentFiles = await listFiles('', false, website?.source);
         // difference between this op returning false and having length === 0

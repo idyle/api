@@ -64,7 +64,7 @@ export const convertHandler = async (req, res) => {
         // distinguish between a custom and standard input
         console.log('entry page', page);
 
-        const string = convertPageToHtml(page?.data, page?.metadata);
+        const string = convertPageToHtml(page?.data, page?.metadata, page?.route);
         if (!string) return errHandler(res, 'Could not convert the page.');
 
         // if the request just wants a string
@@ -74,7 +74,6 @@ export const convertHandler = async (req, res) => {
         const path = `${objectsPath}/${page?.route}.html`;
         const upload = await uploadFile(path, string);
         if (!upload) return errHandler(res, 'Could not upload file');
-        console.log('returning a response');
         return res.json({ status: true, path });
 
     } catch (e) {
@@ -91,7 +90,7 @@ export const convertBatchHandler = async (req, res) => {
 
         // converting for each file
         let convertedPages = [];
-        for (const page of pages) convertedPages.push({ route: page?.route, string: convertPageToHtml(page?.data, page?.metadata) });
+        for (const page of pages) convertedPages.push({ route: page?.route, string: convertPageToHtml(page?.data, page?.metadata, page?.route) });
         
         // if the request just wants a string
         if (req.query?.output === 'string') return res.json({ status: true, pages: convertedPages });
