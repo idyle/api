@@ -35,14 +35,15 @@ export const getFile = async (path = '', bucket = defaultBucket) => {
         const options = {
             version: 'v4',
             action: 'read',
+            cname: 'https://cdn.idyle.app',
             expires: Date.now() + 12 * 60 * 60 * 1000, // 12 hrs
         };
 
         const file = storage.bucket(bucket).file(path);
-
         return {
             name: file.name.split('/')[file.name.split('/').length - 1],
             path: file.name,
+            public: (await file.isPublic())[0],
             type: (await file.getMetadata())[0].contentType || 'unknown',
             url: (await file.getSignedUrl(options))[0]
         };
@@ -89,16 +90,17 @@ export const listFiles = async (path = '', info = false, bucket = defaultBucket)
         const options = {
             version: 'v4',
             action: 'read',
+            cname: 'https://cdn.idyle.app',
             expires: Date.now() + 12 * 60 * 60 * 1000, // 12 hrs
         };
 
         for (const item of operation) if (info) list.push({
             name: item.name.split(`${path}/`)[1],
             path: item.name,
+            public: (await item.isPublic())[0],
             type: item.metadata.contentType || 'unknown',
             url: (await item.getSignedUrl(options))[0]
         }); else list.push(item.name);
-
         return list;
     } catch (e) {
         console.error(e);

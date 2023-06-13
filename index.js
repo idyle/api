@@ -13,6 +13,7 @@ import Editor from './editor/routes.js';
 const app = Express();
 const port = process.env.PORT || 8080;
 
+app.options('*', Cors());
 app.use(Cors({ credentials: true, origin: true }));
 app.use(Express.urlencoded({ extended: true }));
 app.use(Express.json());
