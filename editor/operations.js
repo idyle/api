@@ -1,5 +1,18 @@
 import { stringify } from 'himalaya';
 
+const convertJSONtoCSS = (json = {}) => {
+    let string = '';
+    const entries = Object.entries(json);
+    for (let i = 0; i < entries?.length; i++) {
+        const [key, value] = entries[i];
+        const converted = key?.split(/(?=[A-Z])/)?.join('-')?.toLowerCase();
+        if (!converted && !value) continue;
+        string += `${converted}: ${value};`;
+        if (i < entries?.length - 1) string += ' ';
+    };
+    return string;
+};
+
 const convertJSONtoHimalayaJSON = (config) => {
     // we are basing this off our built in JSON
     let children = config.children;
@@ -13,7 +26,8 @@ const convertJSONtoHimalayaJSON = (config) => {
         if (value instanceof Array && value?.length < 1) continue;
         if (typeof value === 'object' && Object.values(value)?.length < 1) continue;
         if (key === 'className') key = 'class';
-        if (key === 'style') value = JSON.stringify(value).slice(1, -1);
+        if (key === 'style') value = convertJSONtoCSS(value);
+        // brand new convert function
         attributes.push({ key, value });
     };
 
