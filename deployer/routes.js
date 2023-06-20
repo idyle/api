@@ -1,6 +1,6 @@
 import express from 'express';
 import { authHandler, paramHandler, payHandler, reqHandler } from '../utilities/handlers.js';
-import { connectHandler, deployHandler, disconnectHandler, listHandler, setupHandler, websiteHandler } from './handlers.js';
+import { domainPostHandler, deployPostHandler, domainDeleteHandler, deployGetHandler, postWebsiteHandler, getWebsiteHandler } from './handlers.js';
 
 const Router = express.Router();
 
@@ -15,11 +15,14 @@ const filesHandler = paramHandler('all', filesExist);
 Router.use(authHandler);
 Router.use(payHandler);
 Router.use(reqHandler);
-Router.post('/setup/:website', setupHandler);
-Router.post('/deploy/:website', [ filesHandler, deployHandler ]);
-Router.post('/list', listHandler);
-Router.post('/get', websiteHandler);
-Router.post('/connect/:domain', connectHandler);
-Router.post('/disconnect', disconnectHandler);
+Router.route('/websites/:website?').get(getWebsiteHandler).post(postWebsiteHandler);
+Router.route('/deploys/:website?').get(deployGetHandler).post([ filesHandler, deployPostHandler ]);
+Router.route('/domains/:website/:domain?').post(domainPostHandler).delete(domainDeleteHandler);
+// Router.post('/setup/:website', postWebsiteHandler);
+// Router.post('/deploy/:website', [ filesHandler, deployPostHandler ]);
+// Router.post('/list', deployGetHandler);
+// Router.post('/get', getWebsiteHandler);
+// Router.post('/connect/:domain', domainPostHandler);
+// Router.post('/disconnect', domainDeleteHandler);
 
 export default Router;

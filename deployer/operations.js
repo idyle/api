@@ -8,12 +8,12 @@ const mappings = new UrlMapsClient();
 const project = process.env.PROJECT;
 const loadBalancer = process.env.DEFAULT_LOAD_BALANCER;
 
-export const createInstance = async (websiteName, bucketName) => {
+export const createInstance = async (websiteName, bucketName, enableCdn = false) => {
     if (!websiteName || !bucketName) return false;
     try {
         const config = { 
             project,
-            backendBucketResource: { name: websiteName, bucketName }    
+            backendBucketResource: { name: websiteName, bucketName, enableCdn }    
         };
         const [ operation ] = await backend.insert(config);
         if (!operation || operation?.error) return false;
@@ -53,29 +53,6 @@ export const listMappings = async () => {
         return false;
     }
 };
-
-// export const createMapping = async (websiteName, backendLink) => {
-//     if (!websiteName || !backendLink) return false;
-//     const list = await listMappings();
-//     if (!list) return false;
-//     try {
-//         const config = {
-//             project,
-//             urlMap: loadBalancer,
-//             urlMapResource: {
-//                 name: loadBalancer,
-//                 pathMatchers: [ ...list?.pathMatchers, { name: `${websiteName}-path`, defaultService: backendLink } ],
-//                 hostRules: [ ...list?.hostRules, { hosts: [ `${websiteName}.idyle.app` ], pathMatcher: `${websiteName}-path` } ]
-//             }
-//         };
-//         const [ operation ] = await mappings.patch(config);
-//         if (!operation || operation?.error) return false; 
-//         return operation;
-//     } catch (e) {
-//         console.error(e);
-//         return false;
-//     }
-// };
 
 export const setMappings = async (pathMatchers, hostRules) => {
     if (!pathMatchers || !hostRules) return false;
