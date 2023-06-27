@@ -1,21 +1,46 @@
-import { calcSize, deleteObject, getObject, listObjects, setObject } from "../documents/operations.js";
+import { calcSize, deleteObject, getObject, insertObject, listObjects, setObject, updateObject } from "../documents/operations.js";
 import { uploadFile } from "../objects/operations.js";
 import { errHandler } from "../utilities/handlers.js";
 import { convertPageToHtml } from "./operations.js";
 import { randomBytes } from 'crypto';
 
-export const saveHandler = async (req, res) => {
+export const createHandler = async (req, res) => {
     try {
-        const id = req.params?.id ? req.params?.id : randomBytes(8).toString('hex');
-        const operation = await setObject(res?.path, id, req.body?.page);
-        if (!operation) return errHandler(res, 'Could not set a page.');
+        const id = randomBytes(8).toString('hex');
+        const operation = await insertObject(res?.path, id, req.body?.page);
+        if (!operation) return errHandler(res, 'Could not create the page.');
         setObject(`users/${res.user?.uid}/data`, id, { size: calcSize(req.body?.page) });
         return res.json({ status: true, id });
     } catch (e) {
         console.error(e);
         return errHandler(res);
-    }
+    } 
 };
+
+export const editHandler = async (req, res) => {
+    try {
+        const operation = await updateObject(res?.path, req.params?.id, req.body?.page);
+        if (!operation) return errHandler(res, 'Could not edit the page.');
+        setObject(`users/${res.user?.uid}/data`, req.params?.id, { size: calcSize(req.body?.page) });
+        return res.json({ status: true });
+    } catch (e) {
+        console.error(e);
+        return errHandler(res);
+    } 
+};
+
+// export const saveHandler = async (req, res) => {
+//     try {
+//         const id = req.params?.id ? req.params?.id : randomBytes(8).toString('hex');
+//         const operation = await setObject(res?.path, id, req.body?.page);
+//         if (!operation) return errHandler(res, 'Could not set a page.');
+//         setObject(`users/${res.user?.uid}/data`, id, { size: calcSize(req.body?.page) });
+//         return res.json({ status: true, id });
+//     } catch (e) {
+//         console.error(e);
+//         return errHandler(res);
+//     }
+// };
 
 export const listHandler = async (req, res) => {
     try {

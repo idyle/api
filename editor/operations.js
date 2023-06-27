@@ -44,11 +44,23 @@ export const convertPageToHtml = (data, metadata, route) => {
         const stringified = stringify([ converted ]);
         if (!stringified) return false;
         let head = `<title>${route}</title>`, toggle = metadata?.toggle ?? true;
-        // metadata contains toggle and css props
-        if (metadata?.css) head += `<link rel="stylesheet" type="text/css" href=${metadata?.css} />`;
+        let icon = metadata?.favicon || "https://cdn.idyle.app/assets/idyle.ico";
+        const aosCss = `<link rel="stylesheet" type="text/css" href="https://unpkg.com/aos@next/dist/aos.css" />`;
+        const aosJs = `<script src="https://unpkg.com/aos@next/dist/aos.js"></script>`;
+        const aosInit = `<script>AOS.init();</script>`;
+        if (icon) head += `<link rel="icon" href="${icon}" />`
+        if (metadata?.css) head += `<link rel="stylesheet" type="text/css" href="${metadata?.css}" />`;
         if (toggle) head += '<script src="https://cdn.tailwindcss.com"></script>';
         if (metadata?.font) head += `<style>html { font-family: '${metadata?.font}' !important }></style>`;
-        return `<html>${head ? `<head>${head}</head>` : ''}<body><div>${stringified}</div></body></html>`;
+        return `
+        <html>
+            <head>${head}${aosCss}</head>
+            <body>
+                <div>${stringified}</div>
+                ${aosJs}
+                ${aosInit}
+            </body>
+        </html>`;
     } catch (e) {
         console.error(e);
         return false;
