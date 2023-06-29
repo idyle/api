@@ -117,14 +117,23 @@ export const getUserByUid = async (uid = '') => {
     }
 };
 
-// internal operations created for paymnents
-
 export const setUserClaims = async (uid = '', claims = {}) => {
     try {
         if (!uid || !claims) return false;
         await getAuth().setCustomUserClaims(uid, claims);
-        // await getAuth().revokeRefreshTokens(uid);
         return true;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+};
+
+export const getUserByEmail = async (email = '') => {
+    if (!email) return false;
+    try {
+        const user = await getAuth().getUserByEmail(email);
+        if (!user || user?.error) return false;
+        return { uid: user?.uid, email: user?.email, name: user?.displayName, ...user?.customClaims }; 
     } catch (e) {
         console.error(e);
         return false;

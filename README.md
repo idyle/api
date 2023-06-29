@@ -71,11 +71,23 @@ Revokes a short-lived access or long-lived session token.
 
 `RETURNS` True or false boolean.
 
-###  /user/{user} `POST`
+###  /users/{user} 
+
+### `GET`
 
 Gets user data based on the user id. Entering in **user** retrieves the data of the calling user.
 
 `REQUIRES` A valid User ID.
+
+`RETURNS` User data object.
+
+### `POST`
+
+Sets user data based on the user identifier. Entering in **user** retrieves the data of the calling user.
+
+`ACCEPTS` Query "type" with value "email".
+
+`REQUIRES` A valid User ID or User email.
 
 `RETURNS` User data object.
 
@@ -173,7 +185,15 @@ Converts all editor data into an HTML file in bulk. Entering in **user** as the 
 
 `https://api.idyle.app/deployer`
 
-### /setup/{website} `POST`
+### /websites/{website}
+
+### `GET` 
+
+Lists all websites 
+
+`RETURNS` An array of website objects.
+
+### `POST`
 
 Sets up a user's website.
 
@@ -181,7 +201,15 @@ Sets up a user's website.
 
 `RETURNS` True or false boolean.
 
-### /deploy/{website} `POST`
+### /deploys/{website} 
+
+### `GET`
+
+Lists all created deploys.
+
+`RETURNS` An array of deploy objects.
+
+### `POST`
 
 Makes a deploy to an existing website.
 
@@ -189,19 +217,9 @@ Makes a deploy to an existing website.
 
 `RETURNS` Deploy ID and timestamp of completion
 
-### /get `POST`
+### /domains/{website}/{domain}
 
-Gets the data of an existing website.
-
-`RETURNS` Website data object.
-
-### /list `POST`
-
-Lists all created deploys.
-
-`RETURNS` An array of deploy objects.
-
-### /connect/{domain} `POST`
+### `POST`
 
 Connects a custom domain to an existing website.
 
@@ -209,7 +227,7 @@ Connects a custom domain to an existing website.
 
 `RETURNS` True or false boolean.
 
-### /disconnect `POST`
+### `DELETE`
 
 Disconnects an existing custom domain attached to a website. 
 

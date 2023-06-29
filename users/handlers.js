@@ -1,4 +1,4 @@
-import { decodeJWT, generateSession, getUserByUid, revokeSession, verifyJWT } from './operations.js';
+import { decodeJWT, generateSession, getUserByEmail, getUserByUid, revokeSession, setUserClaims, verifyJWT } from './operations.js';
 import { errHandler } from '../utilities/handlers.js';
 
 export const generateHandler = async (req, res) => {
@@ -49,4 +49,19 @@ export const getUserHandler = async (req, res) => {
         console.error(e);
         return errHandler(res);
     }
+};
+
+export const setUserHandler = async (req, res) => {
+    try {
+        let user = req.params?.uid;
+        if (req.query.type === 'email') user = await getUserByEmail(user);
+        else user = await getUserByUid(user);
+        if (!user) return errHandler(res, 'Could not get user.');
+        const operation = await setUserClaims(user?.uid, req.body?.claims);
+        if (!operation) return errHandler(res, 'Could not set user data.');
+        return res.json({ status: true, user });
+    } catch (e) {
+        console.error(e);
+        return errHandler(res);
+    };
 };
