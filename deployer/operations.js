@@ -6,7 +6,7 @@ const operations = new GlobalOperationsClient();
 const mappings = new UrlMapsClient();
 
 const project = process.env.PROJECT;
-const loadBalancer = process.env.DEFAULT_LOAD_BALANCER;
+const defaultLoadBalancer = process.env.DEFAULT_LOAD_BALANCER;
 
 export const createInstance = async (websiteName, bucketName, enableCdn = false) => {
     if (!websiteName || !bucketName) return false;
@@ -59,8 +59,8 @@ export const setMappings = async (pathMatchers, hostRules) => {
     try {
         const config = {
             project,
-            urlMap: loadBalancer,
-            urlMapResource: { name: loadBalancer, pathMatchers, hostRules }
+            urlMap: defaultLoadBalancer,
+            urlMapResource: { name: defaultLoadBalancer, pathMatchers, hostRules }
         };
         const [ operation ] = await mappings.patch(config);
         if (!operation || operation?.error) return false; 

@@ -29,7 +29,8 @@ export const postWebsiteHandler = async (req, res) => {
         if (!websites) return errHandler(res, 'Failed to list websites.');
         if (websites?.length >= config[res.user?.planType]?.websites) return errHandler(res, 'Website limit reached.');
         // Restrict # of creatable websites based on user's plan
-        const source = `idyle-${randomBytes(8).toString('hex')}`;
+        const source = `${req.params?.website}.idyle.app`;
+        // const source = `idyle-${randomBytes(8).toString('hex')}`;
         // registering the app name 
         const register = await insertObject(`websites`, req.params?.website, { uid: res.user?.uid, source });
         // saving a website name via db to avoid duplicates

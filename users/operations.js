@@ -11,6 +11,8 @@ import { decode } from 'jsonwebtoken';
 
 initializeApp(); // using ADC
 
+const project = process.env.PROJECT;
+
 /**
  * Decodes a JWT and returns the decoded claims.
  * @param {String} jwt the JWT in the form of a string.
@@ -41,8 +43,8 @@ export const verifyJWT = async (JWT = '') => {
     try {
         let verification = false;
         const decodedJWT = decode(JWT);
-        if (decodedJWT?.iss === 'https://securetoken.google.com/idyleio') verification = await verifyToken(JWT);
-        else if (decodedJWT?.iss === 'https://session.firebase.google.com/idyleio') verification = await verifySession(JWT);
+        if (decodedJWT?.iss === `https://securetoken.google.com/${project}`) verification = await verifyToken(JWT);
+        else if (decodedJWT?.iss === `https://session.firebase.google.com/${project}`) verification = await verifySession(JWT);
         return verification;
     } catch (e) {
         console.error(e);
