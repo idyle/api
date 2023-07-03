@@ -28,17 +28,11 @@ const request = async () => {
 };
 ```
 
-### Notes
-
-* At this time, most requests will come in the form of a `POST` method. 
-* The API will also only accept the `Access Token` as a valid form of authentication. 
-* Future updates should address these limitations, including method standardization, key-based authentication, among others.
-
 ### Structure
 
 The API is divided into six middlewares that correspond to each of idyle's services. These are namely:
 
-1. Users
+1. Auth
 2. Payments
 3. Editor
 4. Deployer
@@ -51,21 +45,23 @@ As such, they may be accessed through the following pattern below.
 
 ## Users
 
-`https://api.idyle.app/users`
+`https://api.idyle.app/auth`
 
-### /generate `POST`
+### /tokens
 
-Generates a long-lived session token.
-
-`RETURNS` Long-lived session token string. 
-
-###  /verify `POST`
+### `GET`
 
 Verifies whether a credential is valid or not.
 
 `RETURNS` True or false boolean.
 
-###  /revoke `POST`
+### `POST`
+
+Generates a long-lived session token.
+
+`RETURNS` Long-lived session token string. 
+
+### `DELETE`
 
 Revokes a short-lived access or long-lived session token. 
 
@@ -95,7 +91,9 @@ Sets user data based on the user identifier. Entering in **user** retrieves the 
 
 `https://api.idyle.app/payments`
 
-### /checkout/{plan} `POST`
+### /plans/{id}
+
+### `GET`
 
 Generates a checkout link for a specified plan based on an ID.
 
@@ -103,7 +101,7 @@ Generates a checkout link for a specified plan based on an ID.
 
 `RETURNS` A checkout link.
 
-### /confirm/{session} `POST`
+### `POST`
 
 Confirms a completed purchase for a plan based on an ID
 
@@ -111,7 +109,7 @@ Confirms a completed purchase for a plan based on an ID
 
 `RETURNS` True or false boolean.
 
-### /cancel/{subscription} `POST`
+### `DELETE`
 
 Cancels an active subscription based on an iD.
 
@@ -119,7 +117,9 @@ Cancels an active subscription based on an iD.
 
 `RETURNS` True or false boolean.
 
-### /metrics `POST`
+### /metrics 
+
+### `GET`
 
 Gets metrics data for a user based on usage.
 
@@ -129,23 +129,9 @@ Gets metrics data for a user based on usage.
 
 `https://api.idyle.app/editor`
 
-###  /save/{path}/{id} `POST`
+### /pages/{path}
 
-Creates or updates page data. Entering in **user** as the path uses editor's default path.
-
-`REQUIRES` A valid path and valid page ID. 
-
-`RETURNS` Page ID string.
-
-###  /get/{path}/{id} `POST`
-
-Gets a page. Entering in **user** as the path uses editor's default path.
-
-`REQUIRES` A valid path and valid page ID. 
-
-`RETURNS` Page data object.
-
-###  /list/{path} `POST`
+### `GET`
 
 Lists all pages. Entering in **user** as the path uses editor's default path.
 
@@ -153,7 +139,33 @@ Lists all pages. Entering in **user** as the path uses editor's default path.
 
 `RETURNS` Array of page data objects.
 
-###  /delete/{path}/{id} `POST`
+### `POST`
+
+Creates a page. Entering in **user** as the path uses editor's default path.
+
+`REQUIRES` A valid path. 
+
+`RETURNS` Page ID string.
+
+### /pages/{path}/{id}
+
+### `PATCH`
+
+Updates page data. Entering in **user** as the path uses editor's default path.
+
+`REQUIRES` A valid path and valid page ID. 
+
+`RETURNS` Page ID string.
+
+### `GET`
+
+Gets a page. Entering in **user** as the path uses editor's default path.
+
+`REQUIRES` A valid path and valid page ID. 
+
+`RETURNS` Page data object.
+
+### `DELETE`
 
 Gets a page. Entering in **user** as the path uses editor's default path.
 
@@ -161,7 +173,9 @@ Gets a page. Entering in **user** as the path uses editor's default path.
 
 `RETURNS` True or false boolean.
 
-### /convert/{path}/{id}?type={}&output={} `POST`
+### /convert/{path}/{id}?type={}&output={} 
+
+### `POST`
 
 Converts editor or document data into an HTML file. Entering in **user** as the path uses editor's default path.
 
@@ -171,7 +185,9 @@ Converts editor or document data into an HTML file. Entering in **user** as the 
 
 `RETURNS` Path of the HTML file. If output=string query is specified, HTML string is returned instead. 
 
-### /batchconvert/{path}?output={} `POST`
+### /batchconvert/{path}?output={} 
+
+### `POST`
 
 Converts all editor data into an HTML file in bulk. Entering in **user** as the path uses editor's default path.
 
@@ -237,7 +253,9 @@ Disconnects an existing custom domain attached to a website.
 
 `https://api.idyle.app/objects`
 
-### /upload/{folder}/{file} `POST`
+### /files/{folder}/{file}
+
+### `POST`
 
 Uploads a file. Entering in **user** as the folder uses objects's default folder.
 
@@ -245,7 +263,7 @@ Uploads a file. Entering in **user** as the folder uses objects's default folder
 
 `RETURNS` File object.
 
-### /delete/{folder}/{file} `POST`
+### `DELETE`
 
 Deletes a file. Entering in **user** as the folder uses objects's default folder.
 
@@ -253,23 +271,17 @@ Deletes a file. Entering in **user** as the folder uses objects's default folder
 
 `RETURNS` True or false boolean.
 
-### /download/{folder}/{file} `POST`
+### `GET`
 
-Downloads a file. Entering in **user** as the folder uses objects's default folder.
+Gets file metadata. Entering in **user** as the folder uses objects's default folder. Specifying query type returns the file data.
 
-`REQUIRES` Valid folder name and valid file name.
-
-`RETURNS` File in the form of a buffer.
-
-### /get/{folder}/{file} `POST`
-
-Gets file metadata. Entering in **user** as the folder uses objects's default folder.
+`ACCEPTS` Query "type" with value "download".
 
 `REQUIRES` Valid folder name and valid file name.
 
-`RETURNS` File metadata in form of an object.
+`RETURNS` File metadata in form of an object or file data in the form of a buffer, if query.
 
-### /public/{folder}/{file} `POST`
+### `PATCH`
 
 Makes a file publicly accessible. Entering in **user** as the folder uses objects's default folder.
 
@@ -277,7 +289,9 @@ Makes a file publicly accessible. Entering in **user** as the folder uses object
 
 `RETURNS` True or false boolean.
 
-### /list/{folder} `POST`
+### /folders/{folder} 
+
+### `POST`
 
 Lists all file names. Entering in **user** as the folder uses objects's default folder.
 
@@ -285,7 +299,9 @@ Lists all file names. Entering in **user** as the folder uses objects's default 
 
 `RETURNS` Array of file names.
 
-### /archive/{folder} `POST`
+### /archive/{folder} 
+
+### `POST`
 
 Archives a folder and uploads a compressed zipped file. Entering in **user** as the folder uses objects's default folder.
 
@@ -297,7 +313,9 @@ Archives a folder and uploads a compressed zipped file. Entering in **user** as 
 
 `https://api.idyle.app/documents`
 
-### /insert/{collection}/{id} `POST`
+### /documents/{collection}/{id}
+
+### `POST`
 
 Inserts a JSON document. Entering in **user** as the collection uses documents's default collection.
 
@@ -305,7 +323,7 @@ Inserts a JSON document. Entering in **user** as the collection uses documents's
 
 `RETURNS` True or false boolean.
 
-### /update/{collection}/{id} `POST`
+### `PATCH`
 
 Updates a JSON document. Entering in **user** as the collection uses documents's default collection.
 
@@ -313,7 +331,7 @@ Updates a JSON document. Entering in **user** as the collection uses documents's
 
 `RETURNS` True or false boolean.
 
-### /set/{collection}/{id} `POST`
+### `PUT`
 
 Updates a JSON document. Entering in **user** as the collection uses documents's default collection.
 
@@ -321,7 +339,7 @@ Updates a JSON document. Entering in **user** as the collection uses documents's
 
 `RETURNS` True or false boolean.
 
-### /delete/{collection}/{id} `POST`
+### `DELETE`
 
 Updates a JSON document. Entering in **user** as the collection uses documents's default collection.
 
@@ -329,7 +347,7 @@ Updates a JSON document. Entering in **user** as the collection uses documents's
 
 `RETURNS` True or false boolean.
 
-### /get/{collection}/{id} `POST`
+### `GET`
 
 Updates a JSON document. Entering in **user** as the collection uses documents's default collection.
 
@@ -337,7 +355,9 @@ Updates a JSON document. Entering in **user** as the collection uses documents's
 
 `RETURNS` JSON document object.
 
-### /list/{collection} `POST`
+### /collections/{collection} 
+
+### `POST`
 
 Lists all documents. Entering in **user** as the collection uses documents's default collection.
 

@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { setUserClaims } from '../users/operations.js';
+import { setUserClaims } from '../auth/operations.js';
 
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
@@ -31,6 +31,7 @@ export const confirmCheckoutSession = async (uid, sessionId) => {
         if (!session) return false;
         // verify that the ref id is the same as the calling user
         if (session.client_reference_id !== uid) return false;
+        console.log('session res', session);
         const set = await setSubscription(uid, session.subscription);
         if (!set) return false;
         return true;
@@ -68,11 +69,10 @@ export const setSubscription = async (uid, subId) => {
 export const cancelSubscription = async (uid, subId) => {
     if (!uid || !subId) return false;
     try {
-        const deleted = await stripe.subscriptions.del(subId, { prorate: true });
+        const deleted = await stripe.subscriptions.del(subId, { prorate: false });
         if (!deleted) return false;
         const set = await setUserClaims(uid, { planType: undefined, planEnd: undefined, planId: undefined });
         if (!set) return false;
-        // remove user claims
         return true;
     } catch (e) {
         console.error(e);

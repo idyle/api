@@ -53,13 +53,21 @@ Router.use(payHandler);
 Router.use(reqHandler);
 Router.use('/:op/:path/:id?', convertUserHandler);
 Router.use('/:op/:path/:id?', userHandler);
-Router.post('/convert/:path/:id', [ customPathHandler, convertHandler ]);
-Router.post('/create/:path', [ dataHandler, pageDataHandler, createHandler ]);
-Router.post('/edit/:path/:id', [ dataHandler, pageDataHandler, editHandler ]);
-// Router.post('/save/:path/:id?', [ pageDataHandler, dataHandler, saveHandler ]);
-Router.post('/batchconvert/:path', convertBatchHandler);
-Router.post('/get/:path/:id', getHandler);
-Router.post('/delete/:path/:id', deleteHandler);
-Router.post('/list/:path', listHandler);
+Router.route('/pages/:path')
+.get(listHandler)
+.post([ dataHandler, pageDataHandler, createHandler ]);
+Router.route('/pages/:path/:id')
+.get(getHandler)
+.patch([ dataHandler, pageDataHandler, editHandler ])
+.delete(deleteHandler);
+Router.route('/convert/:path/:id').post([ customPathHandler, convertHandler ]);
+Router.route('/batchconvert/:path').post(convertBatchHandler);
+// Router.post('/convert/:path/:id', [ customPathHandler, convertHandler ]);
+// Router.post('/create/:path', [ dataHandler, pageDataHandler, createHandler ]);
+// Router.post('/edit/:path/:id', [ dataHandler, pageDataHandler, editHandler ]);
+// Router.post('/batchconvert/:path', convertBatchHandler);
+// Router.post('/get/:path/:id', getHandler);
+// Router.post('/delete/:path/:id', deleteHandler);
+// Router.post('/list/:path', listHandler);
 
 export default Router;

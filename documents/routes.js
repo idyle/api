@@ -30,11 +30,18 @@ Router.use(payHandler);
 Router.use(reqHandler);
 Router.use('/:op/:collection/:id?', converter);
 Router.use('/:op/:collection/:id?', userHandler);
-Router.post('/insert/:collection/:id', [ dataHandler, insertHandler ]);
-Router.post('/list/:collection', listHandler);
-Router.post('/update/:collection/:id', [ dataHandler, updateHandler ]);
-Router.post('/set/:collection/:id', [ dataHandler, setHandler ]);
-Router.post('/delete/:collection/:id', deleteHandler);
-Router.post('/get/:collection/:id', getHandler);
+Router.route('/collections/:collection').get(listHandler);
+Router.route('/documents/:collection/:id')
+.get(getHandler)
+.post([ dataHandler, insertHandler ])
+.patch([ dataHandler, updateHandler ])
+.put([ dataHandler, setHandler ])
+.delete(deleteHandler);
+// Router.post('/insert/:collection/:id', [ dataHandler, insertHandler ]);
+// Router.post('/list/:collection', listHandler);
+// Router.post('/update/:collection/:id', [ dataHandler, updateHandler ]);
+// Router.post('/set/:collection/:id', [ dataHandler, setHandler ]);
+// Router.post('/delete/:collection/:id', deleteHandler);
+// Router.post('/get/:collection/:id', getHandler);
 
 export default Router;

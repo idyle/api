@@ -1,5 +1,5 @@
 import { setSubscription } from "../payments/operations.js";
-import { verifyJWT } from "../users/operations.js";
+import { verifyJWT } from "../auth/operations.js";
 import { parseConditions, rateLimit } from "./operations.js";
 import config from './config.js';
 import { listObjects } from "../documents/operations.js";

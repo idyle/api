@@ -15,14 +15,14 @@ const filesHandler = paramHandler('all', filesExist);
 Router.use(authHandler);
 Router.use(payHandler);
 Router.use(reqHandler);
-Router.route('/websites/:website?').get(getWebsiteHandler).post(postWebsiteHandler);
-Router.route('/deploys/:website?').get(deployGetHandler).post([ filesHandler, deployPostHandler ]);
-Router.route('/domains/:website/:domain?').post(domainPostHandler).delete(domainDeleteHandler);
-// Router.post('/setup/:website', postWebsiteHandler);
-// Router.post('/deploy/:website', [ filesHandler, deployPostHandler ]);
-// Router.post('/list', deployGetHandler);
-// Router.post('/get', getWebsiteHandler);
-// Router.post('/connect/:domain', domainPostHandler);
-// Router.post('/disconnect', domainDeleteHandler);
+Router.route('/websites/:website?')
+.get(getWebsiteHandler)
+.post(postWebsiteHandler);
+Router.route('/deploys/:website?')
+.get(deployGetHandler)
+.post([ filesHandler, deployPostHandler ]);
+Router.route('/domains/:website/:domain?')
+.post(domainPostHandler)
+.delete(domainDeleteHandler);
 
 export default Router;

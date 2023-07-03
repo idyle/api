@@ -5,8 +5,7 @@ import config from "../utilities/config.js";
 
 export const checkoutHandler = async (req, res) => {
     try {
-        
-        const operation = await getCheckoutLink(res.user?.uid, req.params.planId);
+        const operation = await getCheckoutLink(res.user?.uid, req.params.id);
         if (!operation) return errHandler(res, 'operationError');
         return res.json({ status: true, link: operation });
     } catch (e) {
@@ -17,7 +16,7 @@ export const checkoutHandler = async (req, res) => {
 
 export const confirmHandler = async (req, res) => {
     try {
-        const operation = await confirmCheckoutSession(res.user?.uid, req.params.sessionId);
+        const operation = await confirmCheckoutSession(res.user?.uid, req.params.id);
         if (!operation) return errHandler(res, 'operationError');
         return res.json({ status: true });
     } catch (e) {
@@ -28,7 +27,7 @@ export const confirmHandler = async (req, res) => {
 
 export const cancelHandler = async (req, res) => {
     try {
-        const operation = await cancelSubscription(res.user?.uid, req.params.subId);
+        const operation = await cancelSubscription(res.user?.uid, req.params.id);
         if (!operation) return errHandler(res, 'operationError');
         return res.json({ status: true });
     } catch (e) {

@@ -47,12 +47,14 @@ const userClaimsExists = {
 const claimsHandler = paramHandler('all', userClaimsExists);
 
 Router.use(jwtHandler);
-Router.post('/generate', generateHandler);
-Router.post('/verify', verifyHandler);
-Router.post('/revoke', revokeHandler);
+Router.route('/tokens')
+.get(verifyHandler)
+.post(generateHandler)
+.delete(revokeHandler);
 Router.use(authHandler);
 Router.use(reqHandler);
-Router.get('/users/:uid', [ converter, userHandler, getUserHandler ]);
-Router.post('/users/:uid', [ converter, claimsHandler, userHandler, setUserHandler ]);
+Router.route('/users/:uid')
+.get([ converter, userHandler, getUserHandler ])
+.post([ converter, claimsHandler, userHandler, setUserHandler ]);
 
 export default Router;

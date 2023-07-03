@@ -29,7 +29,7 @@ export const revokeHandler = async (req, res) => {
     try {
         const JWT =  req.cookies?.session || req.headers.authorization?.split('Bearer ')[1];
         const decodedJWT = decodeJWT(JWT);
-        if (!decodedJWT?.sub) return res.json({ status: false, message: 'JWTInvalid'});
+        if (!decodedJWT?.sub) return errHandler(res, 'The token is invalid.');
         const revokeCookie = await revokeSession(JWT, decodedJWT?.sub);
         res.clearCookie('session'); 
         if (!revokeCookie) return res.json({ status: false });
@@ -42,7 +42,9 @@ export const revokeHandler = async (req, res) => {
 
 export const getUserHandler = async (req, res) => {
     try {
-        const user = await getUserByUid(req.params?.uid);
+        let user = req.params?.uid;
+        if (req.query.type === 'email') user = await getUserByEmail(user);
+        else user = await getUserByUid(user);
         if (!user) return errHandler(res, 'operationError');
         return res.json({ status: true, user });
     } catch (e) {

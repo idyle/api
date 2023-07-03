@@ -32,9 +32,14 @@ const subHandler = paramHandler('all', subscriptionExists);
 Router.use(jwtHandler);
 Router.use(authHandler);
 Router.use(reqHandler);
-Router.post('/checkout/:planId', [ noSubHandler, checkoutHandler ]);
-Router.post('/confirm/:sessionId', [ noSubHandler, confirmHandler ]);
-Router.post('/cancel/:subId', [ subHandler, cancelHandler ]);
-Router.post('/metrics', [ subHandler, metricsHandler ]);
+Router.route('/plans/:id')
+.get([ noSubHandler, checkoutHandler ])
+.post([ noSubHandler, confirmHandler ])
+.delete([ subHandler, cancelHandler ]);
+Router.route('/metrics').get([ subHandler, metricsHandler ]);
+// Router.post('/checkout/:planId', [ noSubHandler, checkoutHandler ]);
+// Router.post('/confirm/:sessionId', [ noSubHandler, confirmHandler ]);
+// Router.post('/cancel/:subId', [ subHandler, cancelHandler ]);
+// Router.post('/metrics', [ subHandler, metricsHandler ]);
 
 export default Router;

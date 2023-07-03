@@ -40,7 +40,9 @@ export const listHandler = async (req, res) => {
 
 export const getHandler = async (req, res) => {
     try {
-        const operation = await getFile(`${res.folder}/${req.params?.file}`);
+        let operation;
+        if (req.query?.type === 'download') operation = await downloadFile(`${res.folder}/${req.params?.file}`);
+        else operation = await getFile(`${res.folder}/${req.params?.file}`);
         if (!operation) return errHandler(res, 'operationError');
         return res.json({ status: true, file: operation });     
     } catch (e) {
@@ -49,16 +51,16 @@ export const getHandler = async (req, res) => {
     }
 };
 
-export const downloadHandler = async (req, res) => {
-    try {
-        const operation = await downloadFile(`${res.folder}/${req.params?.file}`);
-        if (!operation) return errHandler(res, 'operationError');
-        return res.json({ status: true, file: operation });
-    } catch (e) {
-        console.error(e);
-        return errHandler(res);
-    }
-};
+// export const downloadHandler = async (req, res) => {
+//     try {
+//         const operation = await downloadFile(`${res.folder}/${req.params?.file}`);
+//         if (!operation) return errHandler(res, 'operationError');
+//         return res.json({ status: true, file: operation });
+//     } catch (e) {
+//         console.error(e);
+//         return errHandler(res);
+//     }
+// };
 
 export const archiveHandler = async (req, res) => {
     try {
