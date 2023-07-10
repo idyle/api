@@ -60,10 +60,10 @@ export const verifyJWT = async (JWT = '') => {
 
 export const generateSession = async (token = '') => {
     try {
-        const expiry = { expiresIn: 60 * 60 * 24 * 5 * 1000 };
+        const expiry = { expiresIn: 60 * 60 * 24 * 14 * 1000 };
         const decodedToken = await verifyToken(token);
         if (!decodedToken) return false;
-        if (!(new Date().getTime() / 1000 - decodedToken.auth_time < 5 * 60)) return false;
+        if (!(new Date().getTime() / 1000 - decodedToken.iat < 5 * 60)) return false;
         return { expiry, cookie: await getAuth().createSessionCookie(token, expiry) }
     } catch (e) {
         console.error(e);
