@@ -195,3 +195,22 @@ export const makeFilePublic = async (path = '', bucket = defaultBucket) => {
         return false;
     }
 };
+
+// const updateCors = async (bucketName = 'cdn.idyle.app') => {
+//     try {
+//         await storage.bucket(bucketName).setCorsConfiguration([
+//             {
+//             maxAgeSeconds: 3600,
+//             method: ["GET"],
+//             origin: ["*"],
+//             responseHeader: ["Content-Type"],
+//             },
+//         ]);
+
+//         console.log(`Bucket ${bucketName} was updated with a CORS config
+//         to allow ${"GET"} requests from ${"*"} sharing 
+//         ${"Content-Type"} responses across origins`);
+//     } catch (e) {
+//         console.error(e);
+//     }
+// };
