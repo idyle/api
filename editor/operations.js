@@ -36,14 +36,14 @@ const convertJSONtoHimalayaJSON = (config) => {
     // ids are not necessary because we do not display them any way
 };
 
-export const convertPageToHtml = (data, metadata, route) => {
+export const convertPageToHtml = (data, metadata, name) => {
     if (!data) return false;
     try {
         const converted = convertJSONtoHimalayaJSON(data);
         if (!converted) return false;
         const stringified = stringify([ converted ]);
         if (!stringified) return false;
-        let head = `<title>${route}</title>`, toggle = metadata?.toggle ?? true;
+        let head = `<title>${name}</title>`, toggle = metadata?.toggle ?? true;
         let icon = metadata?.favicon || "https://cdn.idyle.app/assets/idyle.ico";
         const aosCss = `<link rel="stylesheet" type="text/css" href="https://unpkg.com/aos@next/dist/aos.css" />`;
         const aosJs = `<script src="https://unpkg.com/aos@next/dist/aos.js"></script>`;
@@ -53,8 +53,13 @@ export const convertPageToHtml = (data, metadata, route) => {
         if (toggle) head += '<script src="https://cdn.tailwindcss.com"></script>';
         if (metadata?.font) head += `<style>html { font-family: '${metadata?.font}' !important }></style>`;
         return `
-        <html>
-            <head>${head}${aosCss}</head>
+        <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                ${head}
+                ${aosCss}
+            </head>
             <body>
                 <div>${stringified}</div>
                 ${aosJs}
